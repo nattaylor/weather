@@ -8,8 +8,10 @@ class Weather {
 	private $forecast;
 	private $options;
 	private $templates;
-	const USERAGENT = "Mozilla/5.0 (compatible; NatTaylorBot; +http://nattaylor.com/bot.html#weathergov)";
-	const FORECAST_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
+	private $geo;
+	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
+	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
+	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 
 	function __construct($options) {
 		$this->setupHelpers();
@@ -18,16 +20,21 @@ class Weather {
 		if(false) {
 
 		} else {
+			if($this->options->reverse_geo_code) {
+				$this->geo = json_decode( $this->geocode() );
+			}
 			$this->forecast = $this->retrieveForecast($this->options->location);
 		}
 	}
 
+	//TODO fixme - probably will regret making these global
 	function setupHelpers() {
 		function curlRetrieve($url) {
 			$ch = curl_init($url); 
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
 			curl_setopt($ch, CURLOPT_USERAGENT, USERAGENT);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+			//curl_setopt($ch, CURLOPT_VERBOSE, true);
 			$output = curl_exec($ch); 
 			curl_close($ch);
 			return $output;
@@ -69,7 +76,10 @@ HTML;
 	}
 
 	function retrieveForecast($location) {
-		return json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_ENDPOINT, $location) ) );
+		return (object)array(
+			"daily" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_DAILY_ENDPOINT, $location) ) ),
+			"hourly" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_HOURLY_ENDPOINT, $location) ) )
+		);
 	}
 
 	function getForecast() {
@@ -78,12 +88,13 @@ HTML;
 
 	function generateForecastHtml() {
 		$html = "";
-		$periods = $this->forecast->properties->periods;
+		$periods = $this->forecast->daily->properties->periods;
 		if(!$periods[0]->isDaytime) {
 			$first = array_shift(array_pop($periods));
 		}
+
 		for($i=0; $i<count($periods); $i+=2 ) {
-			//TODO Clean this up
+			//TODO Clean this up so it doesn't do so much stuff
 			$html .= vsprintf($this->templates->weatherDetails, array(
 					($i==0) ? " open" : "",
 					($i>0) ? $periods[$i]->name . ", ". date ( "M j", strtotime($periods[$i]->startTime) ) : $periods[$i]->name,
@@ -127,11 +138,20 @@ HTML;
 	}
 
 	function helperChanceOfPrecip($detailedForecast) {
-		//TODO fix me
+		//TODO fix me: take the max of either if found
 		return match_all($detailedForecast[0], '/Chance of precipitation is ([0-9]+%)\./')[0][1] ?? "";
 	}
 
 	function helperShortShortener($shortForecast) {
 		return match_all($shortForecast, '/(.*?) then/')[0][1] ?? $shortForecast;
+	}
+
+	function reverseGeocode() {
+		list($lat, $long) = explode(",", $this->options->location);
+		return cacheCurlRetrieve(sprintf(self::GEOCODING_ENDPOINT, $lat, $long, GEOCODING_APIKEY));
+	}
+
+	function getGeo() {
+		return json_encode( $this->geo, JSON_PRETTY_PRINT);
 	}
 }

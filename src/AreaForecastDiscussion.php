@@ -6,11 +6,13 @@ class AreaForecastDiscussion {
 	const APIENDPOINT = "https://api.weather.gov/products/types/AFD/locations/%s";
 	private $forecast;
 	private $options;
+	private $afdRaw;
 
 	function __construct($options) {
 		$this->options = (object)$options;
 		$this->setupHelpers();
-		$this->forecast = $this->forecast();
+		$this->afdRaw = $this->retrieveAreaForecastDiscussion();
+		$this->forecast = $this->parseAreaForecastDiscussion($this->afdRaw);
 	}
 
 	function setupHelpers() {
@@ -37,13 +39,13 @@ class AreaForecastDiscussion {
 		}
 	}
 
-	function forecast() {
+	function retrieveAreaForecastDiscussion() {
 		$latestProductUrl = json_decode(cacheCurlRetrieve(sprintf(self::APIENDPOINT, $this->options->office)))->{"@graph"}[0]->{"@id"};
+		return json_decode(cacheCurlRetrieve($latestProductUrl))->productText;
 
-		$afdRaw = json_decode(cacheCurlRetrieve($latestProductUrl))->productText;
+	}
 
-		$afd = array("url" => $latestProductUrl);
-
+	function parseAreaForecastDiscussion($afdRaw) {
 		//Header
 		foreach(array('blank','000','id','product','blank','name','office','timestamp') as $data) {
 			list($line,$document) = explode("\n", $afdRaw, 2);
