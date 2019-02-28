@@ -5,6 +5,7 @@
  * Weather
  * 	- Hourly
  *  - Responsive, Viewport, Icon, etc
+ *  - Fix 2-stage icon parsing (e.g. "https:\/\/api.weather.gov\/icons\/land\/day\/snow,70\/bkn?size=medium")
  */
 if(file_exists('.secrets.php')) include('.secrets.php');
 include('config.php');
@@ -12,7 +13,6 @@ include('src/Weather.php');
 include('src/AreaForecastDiscussion.php');
 $weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
 $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
-echo "<!-- {$weather->getForecast()} -->";
 ?>
 <!DOCTYPE html>
 <html>
@@ -112,14 +112,30 @@ echo "<!-- {$weather->getForecast()} -->";
 		<a href="#weather">Weather</a> <a href="#afd">Discussion</a>
 	</nav>
 
-	<h1 id="weather">Weather</h1>
-	<?php echo $weather->generateForecastHtml(); ?>
-	<h1 id="afd">Area Forecast Discussion</h1>
-	<?php echo $afd->generateAfdHtml(); ?>
-<!--
-<div style="background-image:url('http://radar.weather.gov/ridge/Overlays/Highways/Short/BOX_Highways_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Cities/Short/BOX_City_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Topo/Short/BOX_Topo_Short.jpg');background-size:contain;"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></div>
-	<a href="https://www.weather.gov/forecastmaps"><img src="https://www.wpc.ncep.noaa.gov//noaa/national_forecast.jpg" style="max-width: 100%" /></a>
-	<a href="https://www.weather.gov/satellite"><img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/GEOCOLOR/1250x750.jpg" style="max-width: 100%" /></a>
--->
+	<details id="weather" open>
+		<summary>Weather</summary>
+		<p><a href="<?php echo $weather->generateWebUrl(); ?>">View Full Forecast</a></p>
+		<?php echo $weather->generateForecastHtml(); ?>
+	</details>
+	<details id="afd">
+		<summary>Area Forecast Discussion</summary>
+		<div><?php echo $afd->generateAfdHtml(); ?></div>
+	</details>
+
+	<details id="radar">
+		<summary>Radar</summary>
+		<div style="background-image:url('https://radar.weather.gov/ridge/Overlays/Highways/Short/BOX_Highways_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Cities/Short/BOX_City_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Topo/Short/BOX_Topo_Short.jpg');background-size:contain;"><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></a></div>
+	</details>
+
+	<details id="maps">
+		<summary>Weather Map</summary>
+		<a href="https://www.weather.gov/forecastmaps"><img src="https://www.wpc.ncep.noaa.gov//noaa/national_forecast.jpg" style="max-width: 100%" /></a>
+	</details>
+
+	<details>
+		<summary>Satelite</summary>
+		<div><a href="https://www.weather.gov/satellite"><img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/GEOCOLOR/625x375.jpg" style="max-width: 100%" /></a></div>
+	</details>
+	<?php echo "<!-- {$weather->getForecast()} -->"; ?>
 </body>
 </html>

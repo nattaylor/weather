@@ -28,9 +28,9 @@ class AreaForecastDiscussion {
 			}
 		}
 
-		if (!function_exists(cacheCurlRetrieve)) {
+		if (!function_exists('cacheCurlRetrieve')) {
 			function cacheCurlRetrieve($url) {
-				$filename = $_ENV['TMPDIR'].hash('md5',$url);
+				$filename = getenv('TMPDIR').hash('md5',$url);
 				if(!file_exists($filename) || filemtime($filename)<time()-3600) {
 					file_put_contents($filename, curlRetrieve($url));
 				}
@@ -94,7 +94,7 @@ class AreaForecastDiscussion {
 					if(count(preg_grep('/^\ +?-/', array($line)))>0) {
 						echo "<ul><li>".implode("</li><li>", explode("-", $line))."</li></ul>".PHP_EOL;
 					} else {
-						echo "<p>$line</h3><!-- $line -->".PHP_EOL;
+						echo "<p>$line</p><!-- $line -->".PHP_EOL;
 					}
 				}
 			}

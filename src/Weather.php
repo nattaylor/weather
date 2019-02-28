@@ -12,6 +12,7 @@ class Weather {
 	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
 	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
 	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
+	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
 
 	function __construct($options) {
 		$this->setupHelpers();
@@ -41,7 +42,7 @@ class Weather {
 		}
 
 		function cacheCurlRetrieve($url) {
-			$filename = $_ENV['TMPDIR'].hash('md5',$url);
+			$filename = getenv('TMPDIR').hash('md5',$url);
 			if(!file_exists($filename) || filemtime($filename)<time()-3600) {
 				file_put_contents($filename, curlRetrieve($url));
 			}
@@ -89,11 +90,22 @@ HTML;
 	function generateForecastHtml() {
 		$html = "";
 		$periods = $this->forecast->daily->properties->periods;
+		$i=0;
 		if(!$periods[0]->isDaytime) {
-			$first = array_shift(array_pop($periods));
+			$i=1;
+			$html .= vsprintf($this->templates->weatherDetails, array(
+					" open",
+					$periods[0]->name,
+					$this->helperShortShortener($periods[0]->shortForecast),
+					$this->helperChanceOfPrecip(array($periods[0]->detailedForecast,"")),
+					$this->helperIconNwsToUnicode($periods[0]->icon),
+					"",
+					$periods[0]->temperature."&deg;",
+					$periods[0]->detailedForecast)
+				);
 		}
 
-		for($i=0; $i<count($periods); $i+=2 ) {
+		for($i, $len=count($periods)-$i; $i<$len; $i+=2 ) {
 			//TODO Clean this up so it doesn't do so much stuff
 			$html .= vsprintf($this->templates->weatherDetails, array(
 					($i==0) ? " open" : "",
@@ -117,22 +129,22 @@ HTML;
 	function helperIconNwsToUnicode($iconUrl) {
 		$iconKey = match_all($iconUrl, '/\/([a-z]+?)(,[0-9]*)?\?/')[0][1];
 		switch($iconKey) {
-			case 'bkn': return ⛅; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
-			case 'skc': return ☀️; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
-			case 'few': return 🌤️; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
-			case 'sct': return 🌤️; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
-			case 'ovc': return ☁️; break; //Overcast | Overcast with Haze | Overcast and Breezy
-			case 'fg': return 🌫️; break; //Fog
-			case 'smoke': return 🌨️; break; //Smoke
-			case 'fzra': return 🌨️; break; //Freezing Rain
-			case 'ip': return 🌧️; break; //Ice Pellets
-			case 'mix': return 🌧️; break; //Freezing Rain Snow
-			case 'raip': return 🌧️; break; //Rain Ice Pellets
-			case 'rasn': return 🌧️; break; //Rain Snow
-			case 'shra': return 🌧️; break; //Rain Showers
-			case 'snow': return 🌨️; break; //Rain Showers
-			case 'rain': return 🌧️; break; //Rain Showers
-			default: return ⁉️;
+			case 'bkn':   return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
+			case 'skc':   return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
+			case 'few':   return '🌤️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
+			case 'sct':   return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
+			case 'ovc':   return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
+			case 'fg':    return '🌫️'; break; //Fog
+			case 'smoke': return '🌨️'; break; //Smoke
+			case 'fzra':  return '🌨️'; break; //Freezing Rain
+			case 'ip':    return '🌧️'; break; //Ice Pellets
+			case 'mix':   return '🌧️'; break; //Freezing Rain Snow
+			case 'raip':  return '🌧️'; break; //Rain Ice Pellets
+			case 'rasn':  return '🌧️'; break; //Rain Snow
+			case 'shra':  return '🌧️'; break; //Rain Showers
+			case 'snow':  return '🌨️'; break; //Rain Showers
+			case 'rain':  return '🌧️'; break; //Rain Showers
+			default:      return '⁉️';
 		} 
 		return $iconKey;
 	}
@@ -153,5 +165,9 @@ HTML;
 
 	function getGeo() {
 		return json_encode( $this->geo, JSON_PRETTY_PRINT);
+	}
+
+	function generateWebUrl() {
+		return sprintf(self::WEBURL, $this->options->location);
 	}
 }
