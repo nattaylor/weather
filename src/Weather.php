@@ -64,10 +64,12 @@ class Weather {
 		<summary class="weather-summary">
 			<span class="weather-period">%s</span>
 			<span class="weather-short">%s</span>
-			<span class="weather-precip">%s</span>
-			<span class="weather-icon">%s</span>
-			<span class="weather-high">%s</span>
-			<span class="weather-low">%s</span>
+			<div class="weather-aside">
+				<span class="weather-precip">%s</span>
+				<span class="weather-icon">%s</span>
+				<span class="weather-high">%s</span>
+				<span class="weather-low">%s</span>
+			</div>
 		</summary>
 		<div class="weather-detailed">
 			<p>%s</p>
@@ -144,6 +146,7 @@ HTML;
 			case 'shra':  return '🌧️'; break; //Rain Showers
 			case 'snow':  return '🌨️'; break; //Rain Showers
 			case 'rain':  return '🌧️'; break; //Rain Showers
+			case 'sleet': return '🌧️'; break;
 			default:      return '⁉️';
 		} 
 		return $iconKey;

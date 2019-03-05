@@ -114,8 +114,8 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 
 	<details id="weather" open>
 		<summary>Weather</summary>
-		<p><a href="<?php echo $weather->generateWebUrl(); ?>">View Full Forecast</a></p>
 		<?php echo $weather->generateForecastHtml(); ?>
+		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
 	</details>
 	<details id="afd">
 		<summary>Area Forecast Discussion</summary>
