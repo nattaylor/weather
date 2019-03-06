@@ -184,7 +184,7 @@ HTML;
 		switch($iconKey) {
 			case 'bkn':   return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
 			case 'skc':   return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
-			case 'few':   return '🌤️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
+			case 'few':   return '☀️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
 			case 'sct':   return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
 			case 'ovc':   return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
 			case 'fg':    return '🌫️'; break; //Fog
