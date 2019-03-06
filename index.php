@@ -30,20 +30,20 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 		    font-size: smaller;
 		    margin-top: 1.5em;
 		}
-		.weather-details {
+		.weather-details, .current-details {
 			border-top:1px solid #ccc;
 		}
 
-		.weather-period {
+		.weather-period.current-period {
 			display: block;
 		}
-		.weather-summary {
+		.weather-summary, .current-summary {
 			list-style: none;
 			position: relative;
 			margin:5px;
 		}
 
-		.weather-high {
+		.weather-high, .current-temp {
 			position: absolute;
 			top:0;
 			right:0;
@@ -56,7 +56,7 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			color: #737373;
 		}
 
-		.weather-short {
+		.weather-short, .current-short {
 			white-space: nowrap;
 			color: #737373;
 			width: calc(320px - 65px);
@@ -75,14 +75,14 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
     		color:cyan;
 		}
 
-		.weather-icon {
+		.weather-icon, .current-icon {
 			position: absolute;
 			font-size:2em;
 			top:-2px;
 			right:25px;
 		}
 
-		.weather-summary::-webkit-details-marker {
+		.weather-summary::-webkit-details-marker, .current-summary::-webkit-details-marker {
 		  display: none;
 		}
 
@@ -105,6 +105,20 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			text-decoration: none;
 		}
 
+		.current-period {
+			font-size:2em;
+		}
+
+		.current-icon {
+			font-size:4em;
+			right:0;
+			top:-10px;
+		}
+
+		.current-temp {
+			font-size:4em;
+		}
+
 	</style>
 </head>
 <body>
@@ -114,7 +128,7 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 
 	<details id="weather" open>
 		<summary>Weather</summary>
-		<?php echo $weather->generateForecastHtml(); ?>
+		<?php echo $weather->generateCurrentAndForecastHtml	(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
 	</details>
 	<details id="afd">

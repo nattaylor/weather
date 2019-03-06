@@ -8,7 +8,10 @@ class Weather {
 	private $forecast;
 	private $options;
 	private $templates;
+	private $current;
 	private $geo;
+	const STATIONS_ENDPOINT = "https://api.weather.gov/points/%s/stations";
+	const STATION_CURRENT_ENDPOINT = "https://api.weather.gov/stations/%s/observations/current";
 	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
 	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
 	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
@@ -25,6 +28,7 @@ class Weather {
 				$this->geo = json_decode( $this->geocode() );
 			}
 			$this->forecast = $this->retrieveForecast($this->options->location);
+			$this->current  = $this->retrieveCurrentObservation($this->options->location);
 		}
 	}
 
@@ -76,6 +80,17 @@ class Weather {
 		</div>
 	</details>
 HTML;
+	$this->templates->weatherCurrent = <<<HTML
+<details class="current-details" open>
+	<summary class="current-summary">
+		<span class="current-period">%s</span>
+		<span class="weather-short">%s</span>
+		<div class="current-aside">
+			<span class="current-icon">%s</span>
+		</div>
+	</summary>
+</details>
+HTML;
 	}
 
 	function retrieveForecast($location) {
@@ -83,6 +98,12 @@ HTML;
 			"daily" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_DAILY_ENDPOINT, $location) ) ),
 			"hourly" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_HOURLY_ENDPOINT, $location) ) )
 		);
+	}
+
+	function retrieveCurrentObservation($location) {
+		$stations  = json_decode( cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
+		$stationId = $stations->features[0]->properties->stationIdentifier;
+		return json_decode( cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $stationId) ) );
 	}
 
 	function getForecast() {
@@ -121,7 +142,37 @@ HTML;
 				);
 		}
 		return $html;
-	} 
+	}
+
+	function generateCurrentObservationHtml() {
+		$html = "";
+		$windDirection = function($w) {
+			switch(true) {
+				case $w >=   0 && $w <  45: return 'N'; break;
+				case $w >=  45 && $w <  90: return 'NE'; break;
+				case $w >=  90 && $w < 135: return 'E'; break;
+				case $w >= 135 && $w < 180: return 'SE'; break;
+				case $w >= 180 && $w < 225: return 'S'; break;
+				case $w >= 225 && $w < 270: return 'SW'; break;
+				case $w >= 270 && $w < 315: return 'W'; break;
+				case $w >= 315 && $w < 360: return 'NW'; break;
+				default: return '?';
+			}
+		};
+		$html .= vsprintf($this->templates->weatherCurrent, array(
+			implode(" ",array(
+				strval(round($this->current->properties->temperature->value*9/5+32))."&deg;",
+				$this->current->properties->textDescription)
+			),
+			"Wind ".$windDirection($this->current->properties->windDirection->value)." ".strval(round($this->current->properties->windSpeed->value*3600/1609))." MPH",
+			$this->helperIconNwsToUnicode($this->current->properties->icon)
+		));
+		return $html;
+	}
+
+	function generateCurrentAndForecastHtml() {
+		return $this->generateCurrentObservationHtml() . $this->generateForecastHtml();
+	}
 
 	/**
 	 * iconHelper parses the icons from https://w1.weather.gov/xml/current_obs/weather.php into unicode
@@ -147,7 +198,7 @@ HTML;
 			case 'snow':  return '🌨️'; break; //Rain Showers
 			case 'rain':  return '🌧️'; break; //Rain Showers
 			case 'sleet': return '🌧️'; break;
-			default:      return '⁉️';
+			default:      return '⁉️'; break;
 		} 
 		return $iconKey;
 	}
