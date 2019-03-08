@@ -39,7 +39,7 @@ class Weather {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
 			curl_setopt($ch, CURLOPT_USERAGENT, USERAGENT);
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-			//curl_setopt($ch, CURLOPT_VERBOSE, true);
+			curl_setopt($ch, CURLOPT_VERBOSE, true);
 			$output = curl_exec($ch); 
 			curl_close($ch);
 			return $output;
@@ -180,7 +180,7 @@ HTML;
 	 * @return [type]          [description]
 	 */
 	function helperIconNwsToUnicode($iconUrl) {
-		$iconKey = match_all($iconUrl, '/\/([a-z]+?)(,[0-9]*)?\?/')[0][1];
+		$iconKey = match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
 		switch($iconKey) {
 			case 'bkn':       return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
 			case 'skc':       return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
