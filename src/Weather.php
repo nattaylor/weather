@@ -182,23 +182,24 @@ HTML;
 	function helperIconNwsToUnicode($iconUrl) {
 		$iconKey = match_all($iconUrl, '/\/([a-z]+?)(,[0-9]*)?\?/')[0][1];
 		switch($iconKey) {
-			case 'bkn':   return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
-			case 'skc':   return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
-			case 'few':   return '☀️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
-			case 'sct':   return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
-			case 'ovc':   return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
-			case 'fg':    return '🌫️'; break; //Fog
-			case 'smoke': return '🌨️'; break; //Smoke
-			case 'fzra':  return '🌨️'; break; //Freezing Rain
-			case 'ip':    return '🌧️'; break; //Ice Pellets
-			case 'mix':   return '🌧️'; break; //Freezing Rain Snow
-			case 'raip':  return '🌧️'; break; //Rain Ice Pellets
-			case 'rasn':  return '🌧️'; break; //Rain Snow
-			case 'shra':  return '🌧️'; break; //Rain Showers
-			case 'snow':  return '🌨️'; break; //Rain Showers
-			case 'rain':  return '🌧️'; break; //Rain Showers
-			case 'sleet': return '🌧️'; break;
-			default:      return '⁉️'; break;
+			case 'bkn':       return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
+			case 'skc':       return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
+			case 'few':       return '☀️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
+			case 'sct':       return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
+			case 'ovc':       return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
+			case 'fg':        return '🌫️'; break; //Fog
+			case 'smoke':     return '🌨️'; break; //Smoke
+			case 'fzra':      return '🌨️'; break; //Freezing Rain
+			case 'ip':        return '🌧️'; break; //Ice Pellets
+			case 'mix':       return '🌧️'; break; //Freezing Rain Snow
+			case 'raip':      return '🌧️'; break; //Rain Ice Pellets
+			case 'rasn':      return '🌧️'; break; //Rain Snow
+			case 'shra':      return '🌧️'; break; //Rain Showers
+			case 'snow':      return '🌨️'; break; //Rain Showers
+			case 'rain':      return '🌧️'; break; //Rain Showers
+			case 'sleet':     return '🌧️'; break;
+			case 'rain_snow': return '🌧️'; break;
+			default:          return '⁉️'; break;
 		} 
 		return $iconKey;
 	}

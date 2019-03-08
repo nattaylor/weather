@@ -119,37 +119,60 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			font-size:4em;
 		}
 
+		#config {
+			background-color: white;
+			position: absolute;
+			top:0;
+			left:0;
+			right:0;
+			bottom: 0;
+			display: none;
+		}
+
+		.section-summary {
+			font-size:1.5em;
+		}
+
+		#config:target {
+			display:block;
+		}
+
 	</style>
 </head>
 <body>
 	<nav class="nav">
 		<a href="#weather">Weather</a> <a href="#afd">Discussion</a>
+		<a href="#config">&xoplus;</a>
 	</nav>
 
 	<details id="weather" open>
-		<summary>Weather</summary>
+		<summary class="section-summary">Weather</summary>
 		<?php echo $weather->generateCurrentAndForecastHtml	(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
 	</details>
 	<details id="afd">
-		<summary>Area Forecast Discussion</summary>
+		<summary class="section-summary">Area Forecast Discussion</summary>
 		<div><?php echo $afd->generateAfdHtml(); ?></div>
 	</details>
 
 	<details id="radar">
-		<summary>Radar</summary>
+		<summary class="section-summary">Radar</summary>
 		<div style="background-image:url('https://radar.weather.gov/ridge/Overlays/Highways/Short/BOX_Highways_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Cities/Short/BOX_City_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Topo/Short/BOX_Topo_Short.jpg');background-size:contain;"><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></a></div>
 	</details>
 
 	<details id="maps">
-		<summary>Weather Map</summary>
+		<summary class="section-summary">Weather Map</summary>
 		<a href="https://www.weather.gov/forecastmaps"><img src="https://www.wpc.ncep.noaa.gov//noaa/national_forecast.jpg" style="max-width: 100%" /></a>
 	</details>
 
-	<details>
-		<summary>Satelite</summary>
+	<details id="satellite">
+		<summary class="section-summary">Satellite</summary>
 		<div><a href="https://www.weather.gov/satellite"><img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/GEOCOLOR/625x375.jpg" style="max-width: 100%" /></a></div>
 	</details>
+	<div id="config">
+		<button onclick="document.location.hash='#'">x</button>
+		<input type="text" placeholder="Zip Code">
+	</div>
 	<?php echo "<!-- {$weather->getForecast()} -->"; ?>
 </body>
 </html>
