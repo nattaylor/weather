@@ -77,10 +77,13 @@ class Weather {
 		</summary>
 		<div class="weather-detailed">
 			<p>%s</p>
+			<div class="weather-hourly">
+				%s
+			</div>
 		</div>
 	</details>
 HTML;
-	$this->templates->weatherCurrent = <<<HTML
+		$this->templates->weatherCurrent = <<<HTML
 <details class="current-details" open>
 	<summary class="current-summary">
 		<span class="current-period">%s</span>
@@ -90,6 +93,13 @@ HTML;
 		</div>
 	</summary>
 </details>
+HTML;
+		$this->templates->hourly = <<<HTML
+<div class="weather-hour">
+	<div class="weather-hour-temp">%s</div>
+	<div class="weather-hour-icon">%s</div>
+	<div class="weather-hour-time">%s</div>
+</div>
 HTML;
 	}
 
@@ -124,12 +134,14 @@ HTML;
 					$this->helperIconNwsToUnicode($periods[0]->icon),
 					"",
 					$periods[0]->temperature."&deg;",
-					$periods[0]->detailedForecast)
+					$periods[0]->detailedForecast,
+					"")
 				);
 		}
 
 		for($i, $len=count($periods)-$i; $i<$len; $i+=2 ) {
 			//TODO Clean this up so it doesn't do so much stuff
+			$hourlyHtml = $this->generateHourlyHtml($periods[$i]);
 			$html .= vsprintf($this->templates->weatherDetails, array(
 					($i==0) ? " open" : "",
 					($i>0) ? $periods[$i]->name . ", ". date ( "M j", strtotime($periods[$i]->startTime) ) : $periods[$i]->name,
@@ -138,8 +150,26 @@ HTML;
 					$this->helperIconNwsToUnicode($periods[$i]->icon),
 					$periods[$i]->temperature."&deg;",
 					$periods[$i+1]->temperature."&deg;",
-					$periods[$i]->detailedForecast." Overnight: ".$periods[$i+1]->detailedForecast)
+					$periods[$i]->detailedForecast." Overnight: ".$periods[$i+1]->detailedForecast,
+					$hourlyHtml)
 				);
+		}
+		return $html;
+	}
+
+	function generateHourlyHtml($dayPeriod) {
+		$html = "";
+		$date = date('Y-m-d', strtotime($dayPeriod->startTime));
+		foreach($this->forecast->hourly->properties->periods as $period) {
+			$datetime = new DateTime($period->startTime);
+			if($datetime->format('Y-m-d') == $date) {
+				$html .= vsprintf($this->templates->hourly, array(
+								"{$period->temperature}&deg;",
+								$this->helperIconNwsToUnicode($period->icon),
+								$datetime->format('g A')
+							)
+						);
+			}
 		}
 		return $html;
 	}
@@ -188,6 +218,7 @@ HTML;
 			case 'sct':          return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
 			case 'ovc':          return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
 			case 'fg':           return '🌫️'; break; //Fog
+			case 'fog':           return '🌫️'; break; //Fog
 			case 'smoke':        return '🌨️'; break; //Smoke
 			case 'fzra':         return '🌨️'; break; //Freezing Rain
 			case 'ip':           return '🌧️'; break; //Ice Pellets

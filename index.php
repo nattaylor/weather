@@ -26,9 +26,9 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 		}
 
 		body {
-		    font-weight: lighter;
-		    font-size: smaller;
-		    margin-top: 1.5em;
+			font-weight: lighter;
+			font-size: smaller;
+			margin-top: 1.5em;
 		}
 		.weather-details, .current-details {
 			border-top:1px solid #ccc;
@@ -60,19 +60,19 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			white-space: nowrap;
 			color: #737373;
 			width: calc(320px - 65px);
-    		overflow: hidden;
-    		display: block;
-    		font-size: smaller;
+			overflow: hidden;
+			display: block;
+			font-size: smaller;
 		}
 
 		.weather-precip {
 			position: absolute;
 			right:60px;
 			top: 50%;
-    		transform: translateY(-50%);
-    		font-weight: bold;
-    		font-size:smaller;
-    		color:cyan;
+			transform: translateY(-50%);
+			font-weight: bold;
+			font-size:smaller;
+			color:cyan;
 		}
 
 		.weather-icon, .current-icon {
@@ -119,6 +119,12 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			font-size:4em;
 		}
 
+		.current-aside {
+			position: absolute;
+			top: 0;
+			right: 0;
+		}
+
 		#config {
 			background-color: white;
 			position: absolute;
@@ -135,6 +141,26 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 
 		#config:target {
 			display:block;
+		}
+
+		.weather-hour {
+			display: inline-block;
+			text-align: center;
+			margin-right: 1vw;
+		}
+
+		.weather-hourly {
+			overflow-x: scroll;
+			white-space: nowrap;
+		}
+
+		.weather-hour-time {
+			font-size: smaller;
+			color: #737373;
+		}
+
+		.weather-hour-icon {
+			font-size: x-large;
 		}
 
 	</style>

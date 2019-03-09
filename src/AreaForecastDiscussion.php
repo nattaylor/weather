@@ -85,7 +85,7 @@ class AreaForecastDiscussion {
 						if(count(preg_grep('/^\ ?\*\//', array($line)))>0) {
 							echo "<h3>".str_replace("*/", "", $line)."</h3><!-- $line -->".PHP_EOL;
 						} else {
-							echo "<h4>$line</h4><!-- $line -->".PHP_EOL;
+							echo "<h4>$line</h4>".PHP_EOL;
 						}
 					} else {
 						echo "<h3>$line</h3>".PHP_EOL;
