@@ -231,6 +231,7 @@ HTML;
 			case 'sleet':        return '🌧️'; break;
 			case 'rain_snow':    return '🌧️'; break;
 			case 'rain_showers': return '🌧️'; break;
+			case 'tsra':         return '⛈️'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
