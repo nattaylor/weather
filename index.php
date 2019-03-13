@@ -13,6 +13,7 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 	<title>Weather</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
+	<link rel="icon" sizes="128x128" href="icon.png">
 	<style type="text/css">
 		html {
 			font-family: sans-serif;
