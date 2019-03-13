@@ -4,8 +4,7 @@ if(file_exists('.secrets.php')) include('.secrets.php');
 include('config.php');
 include('src/Weather.php');
 include('src/AreaForecastDiscussion.php');
-//$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
-$weather = new Weather(array("location"=>"40.7146,-74.0071","reverse_geo_code"=>false));
+$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
 $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 ?>
 <!DOCTYPE html>
