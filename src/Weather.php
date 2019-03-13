@@ -10,15 +10,17 @@ class Weather {
 	private $templates;
 	private $current;
 	private $geo;
+	private $debug;
 	const STATIONS_ENDPOINT = "https://api.weather.gov/points/%s/stations";
 	const STATION_CURRENT_ENDPOINT = "https://api.weather.gov/stations/%s/observations/current";
 	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
 	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
 	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
+	const SHORT_TTL = 3600;
+	const LONG_TTL = 604800;
 
 	function __construct($options) {
-		$this->setupHelpers();
 		$this->setupTemplates();
 		$this->options = (object)$options;
 		if(false) {
@@ -32,35 +34,35 @@ class Weather {
 		}
 	}
 
-	//TODO fixme - probably will regret making these global
-	function setupHelpers() {
-		function curlRetrieve($url) {
-			$ch = curl_init($url); 
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
-			curl_setopt($ch, CURLOPT_USERAGENT, USERAGENT);
-			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-			curl_setopt($ch, CURLOPT_VERBOSE, true);
-			$output = curl_exec($ch); 
-			curl_close($ch);
-			return $output;
-		}
-
-		function cacheCurlRetrieve($url) {
-			$filename = getenv('TMPDIR').hash('md5',$url);
-			if(!file_exists($filename) || filemtime($filename)<time()-3600) {
-				file_put_contents($filename, curlRetrieve($url));
-			}
-			return file_get_contents($filename);
-		}
-
-		function match_all($str, $regex, $trim = true) {
-			preg_match_all($regex, $str, $results, PREG_SET_ORDER);
-			foreach ($results as $key => $result) {
-				$results[$key] = $result;
-			}
-			return $results;
-		}
+	function curlRetrieve($url) {
+		$ch = curl_init($url); 
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+		curl_setopt($ch, CURLOPT_USERAGENT, USERAGENT);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_VERBOSE, true);
+		$output = curl_exec($ch); 
+		curl_close($ch);
+		return $output;
 	}
+
+	function cacheCurlRetrieve($url) {
+		$filename = getenv('TMPDIR').'weather_'.hash('md5',$url);
+		$this->debug['TMPDIR'] = getenv('TMPDIR');
+		$ttl = (strpos($url, 'forecast') || strpos($url, 'observation')) ? self::SHORT_TTL : self::LONG_TTL;
+		if(!file_exists($filename) || filemtime($filename)<time()-$ttl) {
+			file_put_contents($filename, $this->curlRetrieve($url));
+		}
+		return file_get_contents($filename);
+	}
+
+	function match_all($str, $regex, $trim = true) {
+		preg_match_all($regex, $str, $results, PREG_SET_ORDER);
+		foreach ($results as $key => $result) {
+			$results[$key] = $result;
+		}
+		return $results;
+	}
+
 	function setupTemplates() {
 		$this->templates = (object)array();
 		$this->templates->weatherDetails = <<<HTML
@@ -105,15 +107,15 @@ HTML;
 
 	function retrieveForecast($location) {
 		return (object)array(
-			"daily" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_DAILY_ENDPOINT, $location) ) ),
-			"hourly" => json_decode( cacheCurlRetrieve( sprintf( self::FORECAST_HOURLY_ENDPOINT, $location) ) )
+			"daily" => json_decode( $this->cacheCurlRetrieve( sprintf( self::FORECAST_DAILY_ENDPOINT, $location) ) ),
+			"hourly" => json_decode( $this->cacheCurlRetrieve( sprintf( self::FORECAST_HOURLY_ENDPOINT, $location) ) )
 		);
 	}
 
 	function retrieveCurrentObservation($location) {
-		$stations  = json_decode( cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
+		$stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
 		$stationId = $stations->features[0]->properties->stationIdentifier;
-		return json_decode( cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $stationId) ) );
+		return json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $stationId) ) );
 	}
 
 	function getForecast() {
@@ -135,7 +137,8 @@ HTML;
 					"",
 					$periods[0]->temperature."&deg;",
 					$periods[0]->detailedForecast,
-					"")
+					"",
+					)
 				);
 		}
 
@@ -162,7 +165,7 @@ HTML;
 		$date = date('Y-m-d', strtotime($dayPeriod->startTime));
 		foreach($this->forecast->hourly->properties->periods as $period) {
 			$datetime = new DateTime($period->startTime);
-			if($datetime->format('Y-m-d') == $date) {
+			if($datetime->format('Y-m-d') == $date && $datetime->format('h')%2 == 0) {
 				$html .= vsprintf($this->templates->hourly, array(
 								"{$period->temperature}&deg;",
 								$this->helperIconNwsToUnicode($period->icon),
@@ -210,7 +213,7 @@ HTML;
 	 * @return [type]          [description]
 	 */
 	function helperIconNwsToUnicode($iconUrl) {
-		$iconKey = match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
+		$iconKey = $this->match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
 		switch($iconKey) {
 			case 'bkn':          return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
 			case 'skc':          return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
@@ -239,16 +242,16 @@ HTML;
 
 	function helperChanceOfPrecip($detailedForecast) {
 		//TODO fix me: take the max of either if found
-		return match_all($detailedForecast[0], '/Chance of precipitation is ([0-9]+%)\./')[0][1] ?? "";
+		return $this->match_all($detailedForecast[0], '/Chance of precipitation is ([0-9]+%)\./')[0][1] ?? "";
 	}
 
 	function helperShortShortener($shortForecast) {
-		return match_all($shortForecast, '/(.*?) then/')[0][1] ?? $shortForecast;
+		return $this->match_all($shortForecast, '/(.*?) then/')[0][1] ?? $shortForecast;
 	}
 
 	function reverseGeocode() {
 		list($lat, $long) = explode(",", $this->options->location);
-		return cacheCurlRetrieve(sprintf(self::GEOCODING_ENDPOINT, $lat, $long, GEOCODING_APIKEY));
+		return $this->cacheCurlRetrieve(sprintf(self::GEOCODING_ENDPOINT, $lat, $long, GEOCODING_APIKEY));
 	}
 
 	function getGeo() {
@@ -257,5 +260,14 @@ HTML;
 
 	function generateWebUrl() {
 		return sprintf(self::WEBURL, $this->options->location);
+	}
+
+	function generateDebugHtml() {
+		$html = "<script>";
+		$html .= "console.log('TMPDIR: {$this->debug['TMPDIR']}')".PHP_EOL;
+		$html .= "console.log('Declared `forecast`')".PHP_EOL;
+		$html .= sprintf("let forecast = %s", json_encode( $this->forecast ));
+		$html .= "</script>";
+		return $html;
 	}
 }

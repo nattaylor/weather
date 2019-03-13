@@ -1,17 +1,11 @@
 <?php
-/**
- * TODO:
- *
- * Weather
- * 	- Hourly
- *  - Responsive, Viewport, Icon, etc
- *  - Fix 2-stage icon parsing (e.g. "https:\/\/api.weather.gov\/icons\/land\/day\/snow,70\/bkn?size=medium")
- */
+
 if(file_exists('.secrets.php')) include('.secrets.php');
 include('config.php');
 include('src/Weather.php');
 include('src/AreaForecastDiscussion.php');
-$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
+//$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
+$weather = new Weather(array("location"=>"40.7146,-74.0071","reverse_geo_code"=>false));
 $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 ?>
 <!DOCTYPE html>
@@ -19,7 +13,7 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 <head>
 	<title>Weather</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="icon" href="icon.png">
+	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
 	<style type="text/css">
 		html {
 			font-family: sans-serif;
@@ -163,6 +157,13 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 			font-size: x-large;
 		}
 
+		@media only screen and (min-width:70em) { 
+			body {
+				width:320px;
+				margin: 5vw auto;
+			}
+		}
+
 	</style>
 </head>
 <body>
@@ -199,6 +200,6 @@ $afd = new AreaForecastDiscussion(array("office"=>"BOX"));
 		<button onclick="document.location.hash='#'">x</button>
 		<input type="text" placeholder="Zip Code">
 	</div>
-	<?php echo "<!-- {$weather->getForecast()} -->"; ?>
+	<?php echo $weather->generateDebugHtml(); ?>
 </body>
 </html>
