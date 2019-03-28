@@ -30,7 +30,7 @@ class AreaForecastDiscussion {
 
 		if (!function_exists('cacheCurlRetrieve')) {
 			function cacheCurlRetrieve($url) {
-				$filename = getenv('TMPDIR').hash('md5',$url);
+				$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
 				if(!file_exists($filename) || filemtime($filename)<time()-3600) {
 					file_put_contents($filename, curlRetrieve($url));
 				}
@@ -83,7 +83,9 @@ class AreaForecastDiscussion {
 				if(count(preg_grep('/\.\.\.\ ?$/', array($line)))>0) {
 					if($section[0][0]=='LONG TERM') {
 						if(count(preg_grep('/^\ ?\*\//', array($line)))>0) {
-							echo "<h3>".str_replace("*/", "", $line)."</h3><!-- $line -->".PHP_EOL;
+							echo "<h3>".str_replace("*/", "", $line);
+							if(isset($_GET['debug'])) echo "</h3><!-- $line -->";
+							echo PHP_EOL;
 						} else {
 							echo "<h4>$line</h4>".PHP_EOL;
 						}
@@ -94,7 +96,9 @@ class AreaForecastDiscussion {
 					if(count(preg_grep('/^\ +?-/', array($line)))>0) {
 						echo "<ul><li>".implode("</li><li>", explode("-", $line))."</li></ul>".PHP_EOL;
 					} else {
-						echo "<p>$line</p><!-- $line -->".PHP_EOL;
+						echo "<p>$line</p>";
+						if(isset($_GET['debug'])) echo "<!-- $line -->";
+						echo PHP_EOL;
 					}
 				}
 			}

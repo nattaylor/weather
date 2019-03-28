@@ -2,6 +2,8 @@
 
 /**
  * Work with NWS Weather Data
+ *
+ * Usage: `$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false)); echo $weather->generateCurrentAndForecastHtml();`
  */
 class Weather {
 
@@ -11,13 +13,16 @@ class Weather {
 	private $current;
 	private $geo;
 	private $debug;
+
 	const STATIONS_ENDPOINT = "https://api.weather.gov/points/%s/stations";
 	const STATION_CURRENT_ENDPOINT = "https://api.weather.gov/stations/%s/observations/current";
 	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
 	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
-	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
+	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
+	// For frequently updated resources like forecasts and observations
 	const SHORT_TTL = 3600;
+	// For infrequently updated resources like metadata
 	const LONG_TTL = 604800;
 
 	function __construct($options) {
@@ -46,7 +51,7 @@ class Weather {
 	}
 
 	function cacheCurlRetrieve($url) {
-		$filename = getenv('TMPDIR').'weather_'.hash('md5',$url);
+		$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
 		$this->debug['TMPDIR'] = getenv('TMPDIR');
 		$ttl = (strpos($url, 'forecast') || strpos($url, 'observation')) ? self::SHORT_TTL : self::LONG_TTL;
 		if(!file_exists($filename) || filemtime($filename)<time()-$ttl) {
