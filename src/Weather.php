@@ -209,6 +209,9 @@ HTML;
 	}
 
 	function generateCurrentAndForecastHtml() {
+		if($this->forecast->daily->status == 404) {
+			return $this->generateCurrentObservationHtml() . "<p>Sorry, no forecast is currently available as the National Weather Service API is currently not returning forecast results for this location.  Typically this lasts a few hours.</p>";
+		}
 		return $this->generateCurrentObservationHtml() . $this->generateForecastHtml();
 	}
 
