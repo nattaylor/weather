@@ -229,7 +229,7 @@ HTML;
 			case 'sct':          return '🌤️'; break; //Partly Cloudy | Partly Cloudy with Haze | Partly Cloudy and Breezy
 			case 'ovc':          return '☁️'; break; //Overcast | Overcast with Haze | Overcast and Breezy
 			case 'fg':           return '🌫️'; break; //Fog
-			case 'fog':           return '🌫️'; break; //Fog
+			case 'fog':          return '🌫️'; break; //Fog
 			case 'smoke':        return '🌨️'; break; //Smoke
 			case 'fzra':         return '🌨️'; break; //Freezing Rain
 			case 'ip':           return '🌧️'; break; //Ice Pellets
@@ -243,6 +243,7 @@ HTML;
 			case 'rain_snow':    return '🌧️'; break;
 			case 'rain_showers': return '🌧️'; break;
 			case 'tsra':         return '⛈️'; break;
+			case 'wind_few':     return '🌬️'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
