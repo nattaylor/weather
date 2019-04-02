@@ -244,6 +244,7 @@ HTML;
 			case 'rain_showers': return '🌧️'; break;
 			case 'tsra':         return '⛈️'; break;
 			case 'wind_few':     return '🌬️'; break;
+			case 'wind_bkn':     return '🌬️'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
@@ -275,7 +276,7 @@ HTML;
 		$html = "<script>";
 		$html .= "console.log('TMPDIR: {$this->debug['TMPDIR']}')".PHP_EOL;
 		$html .= "console.log('Declared `forecast`')".PHP_EOL;
-		$html .= sprintf("let forecast = %s", json_encode( $this->forecast ));
+		$html .= sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT ));
 		$html .= "</script>";
 		return $html;
 	}
