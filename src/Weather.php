@@ -245,6 +245,8 @@ HTML;
 			case 'tsra':         return '⛈️'; break;
 			case 'wind_few':     return '🌬️'; break;
 			case 'wind_bkn':     return '🌬️'; break;
+			case 'tsra_hi':      return '⛈️'; break;
+			case 'tsra_sct':     return '⛈️'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
