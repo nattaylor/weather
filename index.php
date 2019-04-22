@@ -35,7 +35,7 @@
 
 	<details id="radar">
 		<summary class="section-summary">Radar</summary>
-		<div style="background-image:url('https://radar.weather.gov/ridge/Overlays/Highways/Short/BOX_Highways_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Cities/Short/BOX_City_Short.gif'), url('https://radar.weather.gov/ridge/Overlays/Topo/Short/BOX_Topo_Short.jpg');background-size:contain;"><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></a></div>
+		<div style="background-image:url('BOX_Topo_Short_merged.jpg');background-size:contain;"><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></a></div>
 	</details>
 
 	<details id="maps">
