@@ -14,6 +14,7 @@
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css">
+	<script src="scripts.js"></script>
 </head>
 <body>
 	<!--
@@ -46,6 +47,11 @@
 	<details id="satellite">
 		<summary class="section-summary">Satellite</summary>
 		<div><a href="https://www.weather.gov/satellite"><img src="https://cdn.star.nesdis.noaa.gov/GOES16/ABI/CONUS/GEOCOLOR/625x375.jpg" style="max-width: 100%" /></a></div>
+	</details>
+	<details id="graphical">
+		<summary class="section-summary">NOAA Graphical</summary>
+		<div><img src="https://graphical.weather.gov/images/massachusetts/WindSpd1_massachusetts.png" onclick="wind('next')" id="wind" style="max-width: 100%"></div>
+		<div><button onclick="wind('first')">Start</button><button onclick="wind('prev')">Prev</button><button onclick="wind('next')">Next</button><button onclick="wind('last')">Last</button><a href="https://graphical.weather.gov/sectors/massachusetts.php#tabs">NOAA Graphical</a></div>
 	</details>
 	<div id="config">
 		<button onclick="document.location.hash='#'">x</button>
