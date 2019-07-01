@@ -15,6 +15,9 @@
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css">
 	<script src="scripts.js"></script>
+	<script type="text/javascript">
+		var radars = <?php echo $weather->radars(); ?>.slice(-10);
+	</script>
 </head>
 <body>
 	<!--
@@ -36,7 +39,8 @@
 
 	<details id="radar">
 		<summary class="section-summary">Radar</summary>
-		<div style="background-image:url('BOX_Topo_Short_merged.jpg');background-size:contain;"><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" style="max-width: 100%"></a></div>
+		<div style="background-image:url('BOX_Topo_Short_merged.jpg');background-size:contain;"><img src="https://radar.weather.gov/RadarImg/N0R/BOX_N0R_0.gif" id="radar" style="max-width: 100%" onclick="setInterval(radarStart,1000,this)" data-i="0"></a></div>
+		<div><a href="https://radar.weather.gov/radar.php?rid=box&product=N0R&overlay=11101111&loop=no">See more</a></div>
 	</details>
 
 	<details id="maps">

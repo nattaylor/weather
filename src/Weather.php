@@ -20,6 +20,7 @@ class Weather {
 	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
 	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
 	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
+	const RADAR_BASE = "https://radar.weather.gov/RadarImg/NCR/BOX/";
 	// For frequently updated resources like forecasts and observations
 	const SHORT_TTL = 3600;
 	// For infrequently updated resources like metadata
@@ -282,5 +283,11 @@ HTML;
 		$html .= sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT ));
 		$html .= "</script>";
 		return $html;
+	}
+
+	function radars() {
+		$html = $this->cacheCurlRetrieve('https://radar.weather.gov/RadarImg/NCR/BOX/');
+		preg_match_all('/<a href="(BOX_[0-9_]+_NCR.gif)">/', $html, $matches);
+		return json_encode( $matches[1] );
 	}
 }

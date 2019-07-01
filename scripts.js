@@ -15,3 +15,8 @@ function wind(action) {
 	}
 	e.src = `https://graphical.weather.gov/images/massachusetts/WindSpd${next}_massachusetts.png`
 }
+
+function radarStart(e) {
+	e.dataset.i++;
+	e.src = "https://radar.weather.gov/RadarImg/NCR/BOX/"+radars[e.dataset.i%radars.length];
+}
