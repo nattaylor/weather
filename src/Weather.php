@@ -54,7 +54,7 @@ class Weather {
 	function cacheCurlRetrieve($url) {
 		$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
 		$this->debug['TMPDIR'] = getenv('TMPDIR');
-		$ttl = (strpos($url, 'forecast') || strpos($url, 'observation')) ? self::SHORT_TTL : self::LONG_TTL;
+		$ttl = (strpos($url, 'forecast') || strpos($url, 'observation') || strpos($url, 'radar')) ? self::SHORT_TTL : self::LONG_TTL;
 		if(!file_exists($filename) || filemtime($filename)<time()-$ttl) {
 			file_put_contents($filename, $this->curlRetrieve($url));
 		}
@@ -249,6 +249,7 @@ HTML;
 			case 'tsra_hi':      return '⛈️'; break;
 			case 'tsra_sct':     return '⛈️'; break;
 			case 'wind_sct':     return '🌤️'; break;
+			case 'hot':          return '🌡️'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
