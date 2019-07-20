@@ -21,6 +21,7 @@ class Weather {
 	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
 	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 	const RADAR_BASE = "https://radar.weather.gov/RadarImg/NCR/BOX/";
+	const BUOY_ENDPOINT = "https://www.ndbc.noaa.gov/data/latest_obs/%s.rss";
 	// For frequently updated resources like forecasts and observations
 	const SHORT_TTL = 3600;
 	// For infrequently updated resources like metadata
@@ -290,5 +291,11 @@ HTML;
 		$html = $this->cacheCurlRetrieve('https://radar.weather.gov/RadarImg/NCR/BOX/');
 		preg_match_all('/<a href="(BOX_[0-9_]+_NCR.gif)">/', $html, $matches);
 		return json_encode( $matches[1] );
+	}
+
+	function buoy() {
+		//44013
+		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013)),null,LIBXML_NOCDATA);
+		return $xml->channel->item->description;
 	}
 }

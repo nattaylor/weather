@@ -57,6 +57,11 @@
 		<div><img src="https://graphical.weather.gov/images/massachusetts/WindSpd1_massachusetts.png" onclick="wind('next')" id="wind" style="max-width: 100%"></div>
 		<div><button onclick="wind('first')">Start</button><button onclick="wind('prev')">Prev</button><button onclick="wind('next')">Next</button><button onclick="wind('last')">Last</button><a href="https://graphical.weather.gov/sectors/massachusetts.php#tabs">NOAA Graphical</a></div>
 	</details>
+	<details id="buoy">
+		<summary class="section-summary">NDBC</summary>
+		<div><?php echo $weather->buoy(); ?></div>
+		<a href="https://www.ndbc.noaa.gov/station_page.php?station=44013">NDBC 44013 Station Page</a></div>
+	</details>
 	<div id="config">
 		<button onclick="document.location.hash='#'">x</button>
 		<input type="text" placeholder="Zip Code">
