@@ -55,10 +55,12 @@ class Weather {
 		return $output;
 	}
 
-	function cacheCurlRetrieve($url) {
+	function cacheCurlRetrieve($url, $ttl=NULL) {
 		$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
 		$this->debug['TMPDIR'] = getenv('TMPDIR');
-		$ttl = (strpos($url, 'forecast') || strpos($url, 'observation') || strpos($url, 'radar')) ? self::SHORT_TTL : self::LONG_TTL;
+		if(is_null($ttl)) {
+			$ttl = (strpos($url, 'forecast') || strpos($url, 'observation') || strpos($url, 'radar')) ? self::SHORT_TTL : self::LONG_TTL;
+		}
 		if(!file_exists($filename) || filemtime($filename)<time()-$ttl) {
 			file_put_contents($filename, $this->curlRetrieve($url));
 		}
@@ -296,8 +298,8 @@ HTML;
 		return json_encode( $matches[1] );
 	}
 
-	function buoy() {
-		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013)),null,LIBXML_NOCDATA);
+	function generateBuoyHtml() {
+		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013), 3600),null,LIBXML_NOCDATA);
 		return $xml->channel->item->description;
 	}
 
@@ -306,7 +308,7 @@ HTML;
 		$html = "<div class=\"weathermaps-wrap\"><div class=\"weathermaps-inner\">";
 		$html .= array_reduce(self::WEATHER_MAPS, function($str, $item) {
 			$url = sprintf(self::WEATHER_MAP_BASE, $item);
-			return $str.="<img loading=\"lazy\" src=\"$url\" style=\"max-width:100%;max-height:100%;\">";
+			return $str.="<img loading=\"lazy\" src=\"$url\" style=\"max-width:100%;\">";
 		});
 		$html .= "</div></div>";
 		return $html;

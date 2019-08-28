@@ -12,6 +12,8 @@ Display weather from the National Weather Service
 - Create generalized loop-er
 	- Allow "skip nights" toggle
 	- Support "Jump to day"
+- ~Parameterize TTL on curlCatchRetrieve~
+- ~Clean up HTML comments~
 
 ### Weather Map Loop
 https://origin.wpc.ncep.noaa.gov/basicwx/day0-7loop.html
