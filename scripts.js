@@ -20,3 +20,5 @@ function radarStart(e) {
 	e.dataset.i++;
 	e.src = "https://radar.weather.gov/RadarImg/NCR/BOX/"+radars[e.dataset.i%radars.length];
 }
+
+

@@ -4,7 +4,7 @@
 	include('src/Weather.php');
 	include('src/AreaForecastDiscussion.php');
 	$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
-	$afd = new AreaForecastDiscussion(array("office"=>"BOX"));
+	$afd = new AreaForecastDiscussion(array("office"=>$weather->getOffice()));
 ?>
 <!DOCTYPE html>
 <html>
@@ -15,17 +15,8 @@
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
 	<script src="scripts.js"></script>
-	<script type="text/javascript">
-		var radars = <?php echo $weather->radars(); ?>.slice(-10);
-	</script>
 </head>
-<body>
-	<!--
-	<nav class="nav">
-		<a href="#weather">Weather</a> <a href="#afd">Discussion</a>
-		<a href="#config">&xoplus;</a>
-	</nav>
-	-->
+<body>	
 	<details id="weather" open>
 		<summary class="section-summary">Weather</summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>

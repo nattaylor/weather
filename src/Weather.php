@@ -5,6 +5,23 @@
  *
  * Usage: `$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false)); echo $weather->generateCurrentAndForecastHtml();`
  */
+
+/**
+* Return a formatted string like vsprintf() with named placeholders.
+*
+* When a placeholder doesn't have a matching key in `$args`,
+*   the placeholder is returned as is to see missing args.
+* @param string $format
+* @param array $args
+* @param string $pattern
+* @return string
+*/
+function p($format, array $args, $pattern="/\{(\w+)\}/") {
+	return preg_replace_callback($pattern, function ($matches) use ($args) {
+		return @$args[$matches[1]] ?: $matches[0];
+	}, $format);
+}
+
 class Weather {
 
 	private $forecast;
@@ -13,6 +30,8 @@ class Weather {
 	private $current;
 	private $geo;
 	private $debug;
+	private $stations;
+	private $stationId;
 
 	const STATIONS_ENDPOINT = "https://api.weather.gov/points/%s/stations";
 	const STATION_CURRENT_ENDPOINT = "https://api.weather.gov/stations/%s/observations/current";
@@ -26,7 +45,8 @@ class Weather {
 	const SHORT_TTL = 3600;
 	// For infrequently updated resources like metadata
 	const LONG_TTL = 604800;
-	const WEATHER_MAPS = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAPS2 = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAPS = array("/sfc/loopimagesfcwbg.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
 	const WEATHER_MAP_BASE = "https://origin.wpc.ncep.noaa.gov%s";
 	const SATELITE_LISTING = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
 
@@ -117,6 +137,11 @@ HTML;
 HTML;
 	}
 
+	public function getOffice() {
+		//return substr($this->stationId, 1);
+		return "BOX";
+	}
+
 	function retrieveForecast($location) {
 		return (object)array(
 			"daily" => json_decode( $this->cacheCurlRetrieve( sprintf( self::FORECAST_DAILY_ENDPOINT, $location) ) ),
@@ -125,9 +150,10 @@ HTML;
 	}
 
 	function retrieveCurrentObservation($location) {
-		$stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
-		$stationId = $stations->features[0]->properties->stationIdentifier;
-		return json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $stationId) ) );
+		$this->stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
+
+		$this->stationId = $this->stations->features[0]->properties->stationIdentifier;
+		return json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId) ) );
 	}
 
 	function getForecast() {
@@ -288,6 +314,7 @@ HTML;
 		$html .= "console.log('TMPDIR: {$this->debug['TMPDIR']}')".PHP_EOL;
 		$html .= "console.log('Declared `forecast`')".PHP_EOL;
 		$html .= sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT ));
+		$html .= sprintf("let stations = %s", json_encode( $this->stations, JSON_PRETTY_PRINT ));
 		$html .= "</script>";
 		return $html;
 	}
@@ -304,13 +331,16 @@ HTML;
 	}
 
 	function generateWeatherMapsHtml() {
-		$html = "";
-		$html = "<div class=\"weathermaps-wrap\"><div class=\"weathermaps-inner\">";
-		$html .= array_reduce(self::WEATHER_MAPS, function($str, $item) {
+		$html = "<nav id=\"weathermaps-nav\">Day: ";
+		$i = 0;
+		$html .= array_reduce(self::WEATHER_MAPS, function($str, $item) use (&$i) {
 			$url = sprintf(self::WEATHER_MAP_BASE, $item);
-			return $str.="<img loading=\"lazy\" src=\"$url\" style=\"max-width:100%;\">";
+			$i++;
+			$day = strftime("%a",strtotime("+".($i-1)." day"));
+			return $str.="<button onclick=\"document.querySelector(&quot;#weathermaps-img&quot;).src=&quot;$url&quot;\">$day</button>";
 		});
-		$html .= "</div></div>";
+		$html .= "<img id=\"weathermaps-img\" src=\"".sprintf(self::WEATHER_MAP_BASE,self::WEATHER_MAPS[0])."\" style=\"max-width:100%\" />";
+		$html .= "</nav>";
 		return $html;
 	}
 

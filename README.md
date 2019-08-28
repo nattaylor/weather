@@ -9,11 +9,19 @@ Display weather from the National Weather Service
 
 ## TODO
 
+- Refactor templating to `p()`
+- Refactor helpers out of classes (should it be a static?)
+- Refactor constants to `config.php`
 - Create generalized loop-er
+	- Support navigation
 	- Allow "skip nights" toggle
 	- Support "Jump to day"
 - ~Parameterize TTL on curlCatchRetrieve~
 - ~Clean up HTML comments~
+
+## References
+
+* [API Documentation](https://forecast-v3.weather.gov/documentation) & https://www.weather.gov/documentation/services-web-api
 
 ### Weather Map Loop
 https://origin.wpc.ncep.noaa.gov/basicwx/day0-7loop.html
