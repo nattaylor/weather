@@ -1,24 +1,34 @@
-function wind(action) {
-	const MAX3HR = 21;
-	const MAX = 51;
-	let e = document.querySelector("#wind");
-	let idx = parseInt(e.src.match(/WindSpd(?<idx>[0-9]{1,2})_/).groups.idx);
-	let increment = idx < MAX3HR || idx == MAX ? 1 : 2;
-	if(action == 'next') {
-		next = (idx%MAX)+increment;
-	} else if (action == 'prev') {
-		next = (idx%MAX)-increment;
-	} else if (action == 'first') {
-		next = 1;
-	} else if (action == 'last') {
-		next = MAX;
+function changeGraphicalForecast(e) {
+	/**
+	 * periods: day or night (8,11,2,5)
+	 * current: today or tonight
+	 * 3hr: periods 0-4
+	 * 6hr: periods 5-12
+	 */
+	var h = (new Date()).getHours();
+	if(e.target.hasAttribute("data-day")) {
+		document.querySelectorAll("#graphicalforecast-day button").forEach(e => e.dataset.active=false);
+		e.target.dataset.active = true;
+		var i = e.target.dataset.day * 8 + 1 + 2;
+		document.querySelectorAll("#graphicalforecast-hour button").forEach(e => e.removeAttribute("disabled"));
+		if(e.target.dataset.day * 2) {
+			document.querySelectorAll("#graphicalforecast-hour button").forEach(e => {
+				if ( (parseInt(e.dataset.hour)+1)/3%2 == 0 ) {
+					e.setAttribute("disabled","true");
+				}
+			})
+		}
+	} else if (e.target.hasAttribute("data-hour")) {
+		var day = parseInt(document.querySelector("#graphicalforecast-day button[data-active='true']").dataset.day);
+		window.day = day;
+		window.hour = parseInt(e.target.dataset.hour);
+		var i = day * 8 + (parseInt(e.target.dataset.hour)+1)/3 - 2;
+		console.log([day, hour, i])
 	}
-	e.src = `https://graphical.weather.gov/images/massachusetts/WindSpd${next}_massachusetts.png`
+	document.querySelector("#graphicalforecast-img").src = `https://graphical.weather.gov/images/massachusetts/WindSpd${i}_massachusetts.png`
 }
 
-function radarStart(e) {
-	e.dataset.i++;
-	e.src = "https://radar.weather.gov/RadarImg/NCR/BOX/"+radars[e.dataset.i%radars.length];
-}
-
-
+window.addEventListener('DOMContentLoaded', (event) => {
+	document.querySelectorAll("#graphicalforecast-day button, #graphicalforecast-hour button").forEach(e => e.addEventListener('click',changeGraphicalForecast));
+	document.querySelector("#graphicalforecast-day button").dataset.active=true;
+})

@@ -17,7 +17,7 @@
 	<script src="scripts.js"></script>
 </head>
 <body>	
-	<details id="weather" open>
+	<details id="weather">
 		<summary class="section-summary">Weather</summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
@@ -41,10 +41,9 @@
 		<p><a href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G16&sector=ne">Open satelite imagery on weather.gov</a></p>
 	</details>
 
-	<details id="graphical">
+	<details id="graphical" open>
 		<summary class="section-summary">Graphical Wind Forecast</summary>
-		<div><img src="https://graphical.weather.gov/images/massachusetts/WindSpd1_massachusetts.png" onclick="wind('next')" id="wind" style="max-width: 100%"></div>
-		<div><button onclick="wind('first')">Start</button><button onclick="wind('prev')">Prev</button><button onclick="wind('next')">Next</button><button onclick="wind('last')">Last</button><a href="https://graphical.weather.gov/sectors/massachusetts.php#tabs">NOAA Graphical</a></div>
+		<?php echo $weather->generateGraphicalForecastHtml(); ?>
 	</details>
 
 	<details id="buoy">

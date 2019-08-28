@@ -49,6 +49,7 @@ class Weather {
 	const WEATHER_MAPS = array("/sfc/loopimagesfcwbg.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
 	const WEATHER_MAP_BASE = "https://origin.wpc.ncep.noaa.gov%s";
 	const SATELITE_LISTING = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
+	const GRAPHICAL_BASE = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
 
 	function __construct($options) {
 		$this->setupTemplates();
@@ -354,7 +355,22 @@ HTML;
 			$url = self::SATELITE_LISTING.array_slice($results[0], -$i, 1)[0]; 
 			$html .= "\"$url\", ";
 		}
-		$html .= "]; (function(){})()</script>";
+		$html .= "];</script>";
+		return $html;
+	}
+
+	function generateGraphicalForecastHtml(){
+		/**
+		 * periods: day or night (8,11,2,5)
+		 * current: today or tonight
+		 * 3hr: periods 0-4
+		 * 6hr: periods 5-12
+		 */
+		$html = "";
+		$html .= implode("",array("<nav id=\"graphicalforecast-day\">",array_reduce(range(0,6),function($str, $i){return $str.="<button data-day=\"$i\">".strftime("%a",strtotime("+$i day"))."</button>";}),"</nav>"));
+		$k = 0;
+		$html .= implode("",array("<nav id=\"graphicalforecast-hour\">",array_reduce([2,5,8,11,2,5,8,11],function($str, $i) use (&$k) {$k++; return $str.="<button data-hour=\"".(intval($i)+intval($k>4 ? 12 : 0))."\">$i</button>";}),"</nav>"));
+		$html .= "<img id=\"graphicalforecast-img\" src=\"".sprintf(self::GRAPHICAL_BASE, "1")."\">";
 		return $html;
 	}
 }
