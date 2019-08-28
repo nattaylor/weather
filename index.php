@@ -17,7 +17,7 @@
 	<script src="scripts.js"></script>
 </head>
 <body>	
-	<details id="weather">
+	<details id="weather" open>
 		<summary class="section-summary">Weather</summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
@@ -41,7 +41,7 @@
 		<p><a href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G16&sector=ne">Open satelite imagery on weather.gov</a></p>
 	</details>
 
-	<details id="graphical" open>
+	<details id="graphical">
 		<summary class="section-summary">Graphical Wind Forecast</summary>
 		<?php echo $weather->generateGraphicalForecastHtml(); ?>
 	</details>
