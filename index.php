@@ -13,7 +13,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
 	<link rel="icon" sizes="128x128" href="icon.png">
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
 	<script src="scripts.js"></script>
 	<script type="text/javascript">
 		var radars = <?php echo $weather->radars(); ?>.slice(-10);
