@@ -11,7 +11,7 @@ function changeGraphicalForecast(e) {
 		e.target.dataset.active = true;
 		var i = e.target.dataset.day * 8 + 1 + 2;
 		document.querySelectorAll("#graphicalforecast-hour button").forEach(e => e.removeAttribute("disabled"));
-		if(e.target.dataset.day * 2) {
+		if(e.target.dataset.day > 2) {
 			document.querySelectorAll("#graphicalforecast-hour button").forEach(e => {
 				if ( (parseInt(e.dataset.hour)+1)/3%2 == 0 ) {
 					e.setAttribute("disabled","true");

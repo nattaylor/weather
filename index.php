@@ -14,7 +14,7 @@
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
-	<script src="scripts.js"></script>
+	<script src="scripts.js<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>"></script>
 </head>
 <body>	
 	<details id="weather" open>
