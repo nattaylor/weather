@@ -140,6 +140,14 @@ body {
 	font-size: x-large;
 }
 
+.weathermaps-wrap {
+	overflow-x: scroll;
+}
+
+.weathermaps-inner {
+	white-space: nowrap;
+}
+
 @media only screen and (min-width:70em) { 
 	body {
 		width:320px;

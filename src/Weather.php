@@ -26,6 +26,9 @@ class Weather {
 	const SHORT_TTL = 3600;
 	// For infrequently updated resources like metadata
 	const LONG_TTL = 604800;
+	const WEATHER_MAPS = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAP_BASE = "https://origin.wpc.ncep.noaa.gov%s";
+	const SATELITE_LISTING = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
 
 	function __construct($options) {
 		$this->setupTemplates();
@@ -294,8 +297,32 @@ HTML;
 	}
 
 	function buoy() {
-		//44013
 		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013)),null,LIBXML_NOCDATA);
 		return $xml->channel->item->description;
+	}
+
+	function generateWeatherMapsHtml() {
+		$html = "";
+		$html = "<div class=\"weathermaps-wrap\"><div class=\"weathermaps-inner\">";
+		$html .= array_reduce(self::WEATHER_MAPS, function($str, $item) {
+			$url = sprintf(self::WEATHER_MAP_BASE, $item);
+			return $str.="<img loading=\"lazy\" src=\"$url\" style=\"max-width:100%;max-height:100%;\">";
+		});
+		$html .= "</div></div>";
+		return $html;
+	}
+
+	function generateSateliteHtml(){
+		$html = "";
+		$listing = $this->curlRetrieve(self::SATELITE_LISTING);
+		preg_match_all('/([0-9]{11}_GOES16-ABI-ne-GEOCOLOR-300x300\.jpg)/', $listing, $results);
+		$html .= sprintf("<img src=\"%s\" data-i=\"0\" id=\"satelite-loop\" style=\"width:100%%;width:100%%\" />", self::SATELITE_LISTING.array_slice($results[0], -12, 1)[0]);
+		$html .= "<script> var satelite_images = [";
+		for ($i=24; $i > 0; $i-=2) {
+			$url = self::SATELITE_LISTING.array_slice($results[0], -$i, 1)[0]; 
+			$html .= "\"$url\", ";
+		}
+		$html .= "]; (function(){})()</script>";
+		return $html;
 	}
 }
