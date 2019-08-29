@@ -1,4 +1,5 @@
 <?php
+	date_default_timezone_set('America/New_York');
 	if(file_exists('.secrets.php')) include('.secrets.php');
 	include('config.php');
 	include('src/Weather.php');
