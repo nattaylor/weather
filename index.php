@@ -1,10 +1,33 @@
 <?php
 	date_default_timezone_set('America/New_York');
+	
+	/**
+	* Return a formatted string like vsprintf() with named placeholders.
+	*
+	* When a placeholder doesn't have a matching key in `$args`,
+	*   the placeholder is returned as is to see missing args.
+	* @param string $format
+	* @param array $args
+	* @param string $pattern
+	* @return string
+	*/
+	function p($format, array $args, $pattern="/\{(\w+)\}/") {
+		return preg_replace_callback($pattern, function ($matches) use ($args) {
+			return @$args[$matches[1]] ?: $matches[0];
+		}, $format);
+	}
+
 	if(file_exists('.secrets.php')) include('.secrets.php');
 	include('config.php');
 	include('src/Weather.php');
 	include('src/AreaForecastDiscussion.php');
-	$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
+	
+	$weather = new Weather(array(
+		"location"=>"42.3755,-71.0368",
+		"reverse_geo_code"=>false,
+		"debug"=>isset($_GET['debug'])
+	));
+
 	$afd = new AreaForecastDiscussion(array("office"=>$weather->getOffice()));
 ?>
 <!DOCTYPE html>
@@ -36,8 +59,8 @@
 		<p><a href="https://origin.wpc.ncep.noaa.gov/basicwx/basic_sfcjpg.shtml">Open weather maps on weather.gov</a></p>
 	</details>
 
-	<details id="satellite">
-		<summary class="section-summary" onclick="setInterval(function(){var img = document.querySelector('#satelite-loop'); img.src = satelite_images[img.dataset.i%12]; img.dataset.i++;},250)">Satellite Imagery</summary>
+	<details id="satelite">
+		<summary class="section-summary">Satellite Imagery</summary>
 		<div><?php echo $weather->generateSateliteHtml(); ?></div>
 		<p><a href="https://www.star.nesdis.noaa.gov/GOES/sector.php?sat=G16&sector=ne">Open satelite imagery on weather.gov</a></p>
 	</details>
@@ -45,6 +68,7 @@
 	<details id="graphical">
 		<summary class="section-summary">Graphical Wind Forecast</summary>
 		<?php echo $weather->generateGraphicalForecastHtml(); ?>
+		<p><a href="https://graphical.weather.gov/sectors/massachusetts.php#tabs">Open graphical forecast on weather.gov</a></p>
 	</details>
 
 	<details id="buoy">
@@ -56,6 +80,7 @@
 	<details id="afd">
 		<summary class="section-summary">Area Forecast Discussion</summary>
 		<div><?php echo $afd->generateAfdHtml(); ?></div>
+		<p><a href="https://forecast-v3.weather.gov/products/locations/BOX/AFD/1?glossary=1">Open area forecast discussion on weather.gov</a></p>
 	</details>
 
 	<div id="config">

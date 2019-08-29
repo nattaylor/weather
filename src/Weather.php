@@ -6,22 +6,6 @@
  * Usage: `$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false)); echo $weather->generateCurrentAndForecastHtml();`
  */
 
-/**
-* Return a formatted string like vsprintf() with named placeholders.
-*
-* When a placeholder doesn't have a matching key in `$args`,
-*   the placeholder is returned as is to see missing args.
-* @param string $format
-* @param array $args
-* @param string $pattern
-* @return string
-*/
-function p($format, array $args, $pattern="/\{(\w+)\}/") {
-	return preg_replace_callback($pattern, function ($matches) use ($args) {
-		return @$args[$matches[1]] ?: $matches[0];
-	}, $format);
-}
-
 class Weather {
 
 	private $forecast;
@@ -33,23 +17,23 @@ class Weather {
 	private $stations;
 	private $stationId;
 
-	const STATIONS_ENDPOINT = "https://api.weather.gov/points/%s/stations";
-	const STATION_CURRENT_ENDPOINT = "https://api.weather.gov/stations/%s/observations/current";
-	const FORECAST_DAILY_ENDPOINT = "https://api.weather.gov/points/%s/forecast";
-	const FORECAST_HOURLY_ENDPOINT = "https://api.weather.gov/points/%s/forecast/hourly";
-	const WEBURL = "https://forecast-v3.weather.gov/point/%s";
-	const GEOCODING_ENDPOINT = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
-	const RADAR_BASE = "https://radar.weather.gov/RadarImg/NCR/BOX/";
-	const BUOY_ENDPOINT = "https://www.ndbc.noaa.gov/data/latest_obs/%s.rss";
+	const STATIONS_ENDPOINT         = "https://api.weather.gov/points/%s/stations";
+	const STATION_CURRENT_ENDPOINT  = "https://api.weather.gov/stations/%s/observations/current";
+	const FORECAST_DAILY_ENDPOINT   = "https://api.weather.gov/points/%s/forecast";
+	const FORECAST_HOURLY_ENDPOINT  = "https://api.weather.gov/points/%s/forecast/hourly";
+	const WEBURL                    = "https://forecast-v3.weather.gov/point/%s";
+	const GEOCODING_ENDPOINT        = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
+	const RADAR_BASE                = "https://radar.weather.gov/RadarImg/NCR/BOX/";
+	const BUOY_ENDPOINT             = "https://www.ndbc.noaa.gov/data/latest_obs/%s.rss";
 	// For frequently updated resources like forecasts and observations
-	const SHORT_TTL = 3600;
+	const SHORT_TTL                 = 3600;
 	// For infrequently updated resources like metadata
-	const LONG_TTL = 604800;
-	const WEATHER_MAPS2 = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
-	const WEATHER_MAPS = array("/sfc/loopimagesfcwbg.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
-	const WEATHER_MAP_BASE = "https://origin.wpc.ncep.noaa.gov%s";
-	const SATELITE_LISTING = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
-	const GRAPHICAL_BASE = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
+	const LONG_TTL                  = 604800;
+	const WEATHER_MAPS2             = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAPS              = array("/sfc/loopimagesfcwbg.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAP_BASE          = "https://origin.wpc.ncep.noaa.gov%s";
+	const SATELITE_LISTING          = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
+	const GRAPHICAL_BASE            = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
 
 	function __construct($options) {
 		$this->setupTemplates();
@@ -139,7 +123,6 @@ HTML;
 	}
 
 	public function getOffice() {
-		//return substr($this->stationId, 1);
 		return "BOX";
 	}
 
@@ -152,9 +135,9 @@ HTML;
 
 	function retrieveCurrentObservation($location) {
 		$this->stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
-
 		$this->stationId = $this->stations->features[0]->properties->stationIdentifier;
-		return json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId) ) );
+		$observation = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId) ) );
+		return $observation;
 	}
 
 	function getForecast() {
@@ -217,8 +200,13 @@ HTML;
 	}
 
 	function generateCurrentObservationHtml() {
+		if(!isset($this->current->properties)) {
+			unlink('weathertmp_'.hash('md5',sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId)));
+			return sprintf("Error retrieving current conditions. <!-- %s -->",json_encode( $this->current , JSON_PRETTY_PRINT));
+		}
 		$html = "";
 		$windDirection = function($w) {
+			$w = $w == 360 ? 0 : $w;
 			switch(true) {
 				case $w >=   0 && $w <  45: return 'N'; break;
 				case $w >=  45 && $w <  90: return 'NE'; break;
@@ -311,19 +299,14 @@ HTML;
 	}
 
 	function generateDebugHtml() {
-		$html = "<script>";
-		$html .= "console.log('TMPDIR: {$this->debug['TMPDIR']}')".PHP_EOL;
-		$html .= "console.log('Declared `forecast`')".PHP_EOL;
-		$html .= sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT ));
-		$html .= sprintf("let stations = %s", json_encode( $this->stations, JSON_PRETTY_PRINT ));
-		$html .= "</script>";
+		$html = implode(PHP_EOL,array(
+			"<script>",
+			sprintf("console.log('TMPDIR: %s')", $this->debug['TMPDIR'] ?? "current"),
+			sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT )),
+			sprintf("let stations = %s", json_encode( $this->stations, JSON_PRETTY_PRINT )),
+			"</script>"
+		));
 		return $html;
-	}
-
-	function radars() {
-		$html = $this->cacheCurlRetrieve('https://radar.weather.gov/RadarImg/NCR/BOX/');
-		preg_match_all('/<a href="(BOX_[0-9_]+_NCR.gif)">/', $html, $matches);
-		return json_encode( $matches[1] );
 	}
 
 	function generateBuoyHtml() {
@@ -332,7 +315,8 @@ HTML;
 	}
 
 	function generateWeatherMapsHtml() {
-		$html = "<nav id=\"weathermaps-nav\">Day: ";
+
+		$html = "<nav id=\"weathermaps-nav\">";
 		$i = 0;
 		$html .= array_reduce(self::WEATHER_MAPS, function($str, $item) use (&$i) {
 			$url = sprintf(self::WEATHER_MAP_BASE, $item);
@@ -367,10 +351,32 @@ HTML;
 		 * 6hr: periods 5-12
 		 */
 		$html = "";
-		$html .= implode("",array("<nav id=\"graphicalforecast-day\">",array_reduce(range(0,6),function($str, $i){return $str.="<button data-day=\"$i\">".strftime("%a",strtotime("+$i day"))."</button>";}),"</nav>"));
+		$html .= implode("",array(
+			"<nav id=\"graphicalforecast-day\">",
+			array_reduce( range(0,6), function($str, $i) { return
+				$str .= "<button data-day=\"$i\""
+					.($i == 0 ? " data-active=\"true\"" : "")
+					.">"
+					.strftime("%a",strtotime("+$i day"))
+					."</button>";}),
+			"</nav>"
+		));
+
 		$k = 0;
-		$html .= implode("",array("<nav id=\"graphicalforecast-hour\">",array_reduce([2,5,8,11,2,5,8,11],function($str, $i) use (&$k) {$k++; return $str.="<button data-hour=\"".(intval($i)+intval($k>4 ? 12 : 0))."\">$i</button>";}),"</nav>"));
+
+		$html .= implode("",array(
+			"<nav id=\"graphicalforecast-hour\">",
+			array_reduce([2,5,8,11,2,5,8,11],function($str, $i) use (&$k) {
+				$k++;
+				return $str
+					.="<button data-hour=\""
+					.(intval($i)+intval($k>4 ? 12 : 0))
+					."\">$i</button>";}),
+			"</nav>"
+		));
+
 		$html .= "<img id=\"graphicalforecast-img\" src=\"".sprintf(self::GRAPHICAL_BASE, "1")."\">";
+
 		return $html;
 	}
 }

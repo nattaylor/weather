@@ -12,10 +12,9 @@ Display weather from the National Weather Service
 - Refactor templating to `p()`
 - Refactor helpers out of classes (should it be a static?)
 - Refactor constants to `config.php`
-- Create generalized loop-er
-	- Support navigation
-	- Allow "skip nights" toggle
-	- Support "Jump to day"
+- Refector separate data from view
+- Refactor DEBUG --> switch to logging approach?  add email alerts?  Avoid frequent emails by tracking "last sent time"
+- ~Create generalized loop-er (Support navigation, Allow "skip nights" toggle,  Support "Jump to day")!
 - ~Parameterize TTL on curlCatchRetrieve~
 - ~Clean up HTML comments~
 
