@@ -83,16 +83,16 @@ function changeGraphicalForecastAndControlUI(e) {
 
 }
 
+var sateliteInterval;
 window.addEventListener('DOMContentLoaded', (event) => {
 
 	document.querySelectorAll("#graphicalforecast-day button, #graphicalforecast-hour button")
 		.forEach(e => e.addEventListener('click',changeGraphicalForecastAndControlUI));
 
 	document.querySelector("#satelite summary").addEventListener('click',function(){
-
-		if(typeof sateliteInterval !== 'undefined') {
+		if(sateliteInterval != null) {
 			clearInterval(sateliteInterval);
-			sateliteInterval = false;
+			sateliteInterval = null;
 		} else {
 			sateliteInterval = setInterval(function(){
 				var img = document.querySelector('#satelite-loop');
