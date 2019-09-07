@@ -36,6 +36,8 @@
 	<title>Weather</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
+	<meta name="mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
 	<script src="scripts.js<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>"></script>
