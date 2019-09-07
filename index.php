@@ -29,6 +29,8 @@
 	));
 
 	$afd = new AreaForecastDiscussion(array("office"=>$weather->getOffice()));
+
+	$url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 ?>
 <!DOCTYPE html>
 <html>
@@ -44,7 +46,7 @@
 </head>
 <body>	
 	<details id="weather" open>
-		<summary class="section-summary">Weather</summary>
+		<summary class="section-summary">Weather: Boston, MA</summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
 	</details>
@@ -79,16 +81,35 @@
 		<a href="https://www.ndbc.noaa.gov/station_page.php?station=44013">Open NDBC station page on weather.gov</a></div>
 	</details>
 
+	<details id="tides">
+		<summary class="section-summary">Tides</summary>
+		<div><?php echo $weather->generateTidesHtml(); ?></div>
+		<a href="https://tidesandcurrents.noaa.gov/stationhome.html?id=8442645">Open CO-OPS Station page on weather.gov</a>
+	</details>
+
 	<details id="afd">
 		<summary class="section-summary">Area Forecast Discussion</summary>
 		<div><?php echo $afd->generateAfdHtml(); ?></div>
 		<p><a href="https://forecast-v3.weather.gov/products/locations/BOX/AFD/1?glossary=1">Open area forecast discussion on weather.gov</a></p>
 	</details>
 
+	<details id="links">
+		<summary class="section-summary">Links</summary>
+		<ul>
+			<li><a href="https://www.windfinder.com/forecast/marblehead_neck">https://www.windfinder.com/forecast/marblehead_neck</a></li>
+			<li><a href="https://sailflow.com/spot/1788">SaiFlow: Children's Island</a></li>
+		</ul>
+	</details>
+
 	<details id="about">
 		<summary class="section-summary">About</summary>
-		<button onclick="navigator.share({url: document.location})">Share</button>
+		<p>This weather webapp was built by Nat Taylor &lt;<a href="mailto:nattaylor@gmail.com">nattaylor@gmail.com</a>&gt;.  The data is retrieved from APIs offered by the National Weather Service.</p>
+		<p>The current version is for Boston, MA.</p>
+		<p>Share by clicking this button <button onclick="if(navigator.share) {navigator.share({url: document.location})} else {alert('Share not supported.')}">Share Page</button> or copying this link <a href="<?php echo $url; ?>"><?php echo $url; ?></a></p>
+		<p>Reload with a <a href="<?php echo "$url?purge";?>">cache buster</a> or <a href="<?php echo "$url?debug";?>">debug output</a>.</p>
+		<p>The source is available at <a href="https://github.com/nattaylor/weather">https://github.com/nattaylor/weather</a>.</p>
 	</details>
+
 	<div id="config">
 		<button onclick="document.location.hash='#'">x</button>
 		<input type="text" placeholder="Zip Code">

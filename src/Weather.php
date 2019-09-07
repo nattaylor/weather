@@ -34,6 +34,7 @@ class Weather {
 	const WEATHER_MAP_BASE          = "https://origin.wpc.ncep.noaa.gov%s";
 	const SATELITE_LISTING          = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
 	const GRAPHICAL_BASE            = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
+	const TIDES_API                 = "https://tidesandcurrents.noaa.gov/api/datagetter?begin_date=%s&end_date=%s&station=8442645&product=predictions&interval=hilo&datum=mllw&units=english&time_zone=lst_ldt&application=NatTaylorDotCom&format=json";
 
 	function __construct($options) {
 		$this->setupTemplates();
@@ -331,7 +332,7 @@ HTML;
 
 	function generateSateliteHtml(){
 		$html = "";
-		$listing = $this->curlRetrieve(self::SATELITE_LISTING);
+		$listing = $this->cacheCurlRetrieve(self::SATELITE_LISTING);
 		preg_match_all('/([0-9]{11}_GOES16-ABI-ne-GEOCOLOR-300x300\.jpg)/', $listing, $results);
 		$html .= sprintf("<img src=\"%s\" data-i=\"0\" id=\"satelite-loop\" style=\"width:100%%;width:100%%\" />", self::SATELITE_LISTING.array_slice($results[0], -12, 1)[0]);
 		$html .= "<script> var satelite_images = [";
@@ -377,6 +378,30 @@ HTML;
 
 		$html .= "<img id=\"graphicalforecast-img\" src=\"".sprintf(self::GRAPHICAL_BASE, "1")."\">";
 
+		return $html;
+	}
+
+	/** https://tidesandcurrents.noaa.gov/api/ */
+	public function generateTidesHtml() {
+		$tides = $this->cacheCurlRetrieve(
+			vsprintf(self::TIDES_API, array(
+				strftime("%Y%m%d"),
+				strftime("%Y%m%d",strtotime("+6 day"))
+			))
+		);
+		$predictions = json_decode( $tides )->predictions;
+		$html = "<table>";
+		for($i=0; $i<count($predictions); $i+=4) {
+			$data = array(
+				strftime("%a",strtotime($predictions[$i]->t)),
+				$predictions[$i]->type.strftime("%l:%M",strtotime($predictions[$i]->t)),
+				$predictions[$i+1]->type.strftime("%l:%M",strtotime($predictions[$i+1]->t)),
+				$predictions[$i+2]->type.strftime("%l:%M",strtotime($predictions[$i+2]->t)),
+				$predictions[$i+3]->type.strftime("%l:%M",strtotime($predictions[$i+3]->t))
+			);
+			$html.="<tr><td>".implode("</td><td>", $data)."</td></tr>";
+		}
+		$html.="</table>";
 		return $html;
 	}
 }

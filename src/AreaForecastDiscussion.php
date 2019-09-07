@@ -1,5 +1,34 @@
 <?php
 
+/**
+ * Parse the NWS Area Forecast Discussion (AFD)
+ *
+ * The AFD offers the reasoning behind a forecast.
+ * 
+ * We parse it mostly since the AFD is tough to read on small screens because
+ * of line breaks, but also to add nicer formatting.
+ *
+ * At least its not ALLCAPS anymore https://www.noaa.gov/media-release/national-weather-service-will-stop-using-all-caps-in-its-forecasts
+ *
+ * In the future, we might do cool to integrate the glossary.
+ *
+ * 
+ * From: https://forecast.weather.gov/glossary.php?word=Area%20Forecast%20Discussion
+ * 
+ * > Area Forecast Discussion
+ * > This National Weather Service product is intended to provide
+ * > a well-reasoned discussion of the meteorological thinking which
+ * > went into the preparation of the Zone Forecast Product. The forecaster
+ * > will try to focus on the most particular challenges of the forecast.
+ * > The text will be written in plain language or in proper contractions.
+ * > At the end of the discussion, there will be a list of all advisories,
+ * > non-convective watches, and non-convective warnings. The term
+ * > non-convective refers to weather that is not caused by thunderstorms.
+ * > An intermediate Area Forecast Discussion will be issued when either
+ * > significant forecast updates are being made or if interesting weather
+ * > is expected to occur.
+ * 
+ */
 
 class AreaForecastDiscussion {
 	const USERAGENT = "Mozilla/5.0 (compatible; NatTaylorPersonalHomepageWeatherGovBot; +http://nattaylor.com/bot.html#weathergov)";
@@ -45,6 +74,17 @@ class AreaForecastDiscussion {
 
 	}
 
+	/**
+	 * Parse AFD into a structured object
+	 *
+	 * Tokens:
+	 *   - Section breaks: `/^&&$/`
+	 *   - Headings: `/^\.(.*?)\.\.$/`
+	 *   - Footer: `/^\$\$$/`
+	 * 
+	 * @param  string $afdRaw AFD as returned by API
+	 * @return [type]         [description]
+	 */
 	function parseAreaForecastDiscussion($afdRaw) {
 		//Header
 		foreach(array('blank','000','id','product','blank','name','office','timestamp') as $data) {
