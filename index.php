@@ -85,6 +85,10 @@
 		<p><a href="https://forecast-v3.weather.gov/products/locations/BOX/AFD/1?glossary=1">Open area forecast discussion on weather.gov</a></p>
 	</details>
 
+	<details id="about">
+		<summary class="section-summary">About</summary>
+		<button onclick="navigator.share({url: document.location})">Share</button>
+	</details>
 	<div id="config">
 		<button onclick="document.location.hash='#'">x</button>
 		<input type="text" placeholder="Zip Code">
