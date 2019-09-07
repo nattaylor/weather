@@ -3,7 +3,14 @@
 /**
  * Work with NWS Weather Data
  *
- * Usage: `$weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false)); echo $weather->generateCurrentAndForecastHtml();`
+ * Retrieves data from the NWS and generates HTML to present it.
+ *
+ * Usage: instantiate then call one of the methods for generating HTML
+ *
+ * ```
+ * $weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
+ * echo $weather->generateCurrentAndForecastHtml();
+ * ```
  */
 
 class Weather {
@@ -36,18 +43,15 @@ class Weather {
 	const GRAPHICAL_BASE            = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
 	const TIDES_API                 = "https://tidesandcurrents.noaa.gov/api/datagetter?begin_date=%s&end_date=%s&station=8442645&product=predictions&interval=hilo&datum=mllw&units=english&time_zone=lst_ldt&application=NatTaylorDotCom&format=json";
 
+	/**
+	 * Setup the Weather object by retrieving the weather and the current observation
+	 * @param Array $options
+	 */
 	function __construct($options) {
 		$this->setupTemplates();
 		$this->options = (object)$options;
-		if(false) {
-
-		} else {
-			if($this->options->reverse_geo_code) {
-				$this->geo = json_decode( $this->geocode() );
-			}
-			$this->forecast = $this->retrieveForecast($this->options->location);
-			$this->current  = $this->retrieveCurrentObservation($this->options->location);
-		}
+		$this->forecast = $this->retrieveForecast($this->options->location);
+		$this->current  = $this->retrieveCurrentObservation($this->options->location);
 	}
 
 	function curlRetrieve($url) {
@@ -73,6 +77,7 @@ class Weather {
 		return file_get_contents($filename);
 	}
 
+	/** Helper to return regex matches */
 	function match_all($str, $regex, $trim = true) {
 		preg_match_all($regex, $str, $results, PREG_SET_ORDER);
 		foreach ($results as $key => $result) {
@@ -81,6 +86,7 @@ class Weather {
 		return $results;
 	}
 
+	/** Helper to instantiate the templates */
 	function setupTemplates() {
 		$this->templates = (object)array();
 		$this->templates->weatherDetails = <<<HTML
@@ -134,6 +140,17 @@ HTML;
 		);
 	}
 
+	/**
+	 * Retrieve the current weather observation for a station near a location
+	 *
+	 * @see  https://www.weather.gov/documentation/services-web-api
+	 *
+	 * Note: Observations are retrieved for stations, not locations.
+	 * The first call retrives the stations near a location.
+	 *
+	 * @param  String $location latlong
+	 * @return Object the station current observation
+	 */
 	function retrieveCurrentObservation($location) {
 		$this->stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
 		$this->stationId = $this->stations->features[0]->properties->stationIdentifier;
@@ -145,6 +162,13 @@ HTML;
 		return json_encode( $this->forecast, JSON_PRETTY_PRINT );
 	}
 
+	/**
+	 * Generate the HTML to present the forecast by iterating over the forecast JSON
+	 *
+	 * Note: Periods are 12 hours long, so during daytime we show 2 periods-worth, but at night we show just one.
+	 *
+	 * @return String The HTML to present the forecast
+	 */
 	function generateForecastHtml() {
 		$html = "";
 		$periods = $this->forecast->daily->properties->periods;
@@ -183,6 +207,8 @@ HTML;
 		return $html;
 	}
 
+	/** Helper to generate the hourly forecast widgets */
+
 	function generateHourlyHtml($dayPeriod) {
 		$html = "";
 		$date = date('Y-m-d', strtotime($dayPeriod->startTime));
@@ -200,6 +226,11 @@ HTML;
 		return $html;
 	}
 
+	/**
+	 * Generate the HTML to present the current observation
+	 *
+	 * @return String HTML to present the observation
+	 */
 	function generateCurrentObservationHtml() {
 		if(!isset($this->current->properties)) {
 			unlink('weathertmp_'.hash('md5',sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId)));
@@ -220,6 +251,7 @@ HTML;
 				default: return '?';
 			}
 		};
+
 		$html .= vsprintf($this->templates->weatherCurrent, array(
 			implode(" ",array(
 				strval(round($this->current->properties->temperature->value*9/5+32))."&deg;",
@@ -228,9 +260,11 @@ HTML;
 			"Wind ".$windDirection($this->current->properties->windDirection->value)." ".strval(round($this->current->properties->windSpeed->value*3600/1609))." MPH",
 			$this->helperIconNwsToUnicode($this->current->properties->icon)
 		));
+
 		return $html;
 	}
 
+	/** Wrapper to generate current conditions and forecast HTML */
 	function generateCurrentAndForecastHtml() {
 		if($this->forecast->daily->status == 404) {
 			return $this->generateCurrentObservationHtml() . "<p>Sorry, no forecast is currently available as the National Weather Service API is currently not returning forecast results for this location.  Typically this lasts a few hours.</p>";
@@ -310,11 +344,27 @@ HTML;
 		return $html;
 	}
 
+	/**
+	 * Retrieve the HTML to present the latest buoy observations
+	 *
+	 * Station pages (e.g. https://www.ndbc.noaa.gov/station_page.php?station=44013) have a link to an XML feed
+	 *
+	 * @return  String HTML to present latest buoy observations
+	 */
 	function generateBuoyHtml() {
 		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013), 3600),null,LIBXML_NOCDATA);
 		return $xml->channel->item->description;
 	}
 
+	/**
+	 * Generate the HTML to present current and forecast weather maps
+	 *
+	 * @see https://www.weather.gov/forecastmaps
+	 * @see https://origin.wpc.ncep.noaa.gov/basicwx/day0-7loop.html
+	 *
+	 *
+	 * @return String The HTML to present
+	 */
 	function generateWeatherMapsHtml() {
 
 		$html = "<nav id=\"weathermaps-nav\">";
@@ -332,18 +382,52 @@ HTML;
 
 	function generateSateliteHtml(){
 		$html = "";
+		$html .= <<<HTML
+<script>
+var sateliteInterval;
+window.addEventListener('DOMContentLoaded', (event) => {
+
+	document.querySelectorAll("#graphicalforecast-day button, #graphicalforecast-hour button")
+		.forEach(e => e.addEventListener('click',changeGraphicalForecastAndControlUI));
+
+	document.querySelector("#satelite summary").addEventListener('click',function(){
+		if(sateliteInterval != null) {
+			clearInterval(sateliteInterval);
+			sateliteInterval = null;
+		} else {
+			sateliteInterval = setInterval(function(){
+				var img = document.querySelector('#satelite-loop');
+				img.src = satelite_images[img.dataset.i%12];
+				img.dataset.i++;}, 250);
+		}
+	})
+
+});
+</script>
+HTML;
 		$listing = $this->cacheCurlRetrieve(self::SATELITE_LISTING);
+
 		preg_match_all('/([0-9]{11}_GOES16-ABI-ne-GEOCOLOR-300x300\.jpg)/', $listing, $results);
+
 		$html .= sprintf("<img src=\"%s\" data-i=\"0\" id=\"satelite-loop\" style=\"width:100%%;width:100%%\" />", self::SATELITE_LISTING.array_slice($results[0], -12, 1)[0]);
+
 		$html .= "<script> var satelite_images = [";
+
 		for ($i=24; $i > 0; $i-=2) {
 			$url = self::SATELITE_LISTING.array_slice($results[0], -$i, 1)[0]; 
 			$html .= "\"$url\", ";
 		}
+
 		$html .= "];</script>";
+
 		return $html;
 	}
 
+	/**
+	 * Present the Graphical Forecast for Wind
+	 *
+	 * @return String The HTML to present the forecast
+	 */
 	function generateGraphicalForecastHtml(){
 		/**
 		 * periods: day or night (8,11,2,5)
@@ -352,6 +436,94 @@ HTML;
 		 * 6hr: periods 5-12
 		 */
 		$html = "";
+		$html .= <<<HTML
+<script>
+/**
+ * Changes the graphical forecast image
+ *
+ * Note: intended to be bound to graphical forecast UI button clicks
+ *
+ * Makes use of datasets on target elements
+ *
+ * Notes on graphical forecast (see https://graphical.weather.gov/sectors/massachusetts.php#tabs)
+ *
+ *  - n ∈ [1,51] for `WindSpd${n}_massachusetts.png`, but close to 51 the even `n` are skipped
+ *
+ *  - half-day periods: day or night (8,11,2,5)
+ *  - current: today or tonight
+ *  - 3hr: periods 0-4
+ *  - 6hr: periods 5-12
+ *
+ * @param  {event} e  the click event
+ * @return {boolean}  always returns true
+ */
+function changeGraphicalForecastAndControlUI(e) {
+
+	var day, // Targeted day
+		hour, // Targeted hour
+		n, // Forecast graphic to display
+		currentHour = (new Date()).getHours();
+
+	function changeDay() {
+
+		document.querySelectorAll("#graphicalforecast-day button").forEach(e => e.dataset.active=false);
+
+		e.target.dataset.active = true;
+
+		day = parseInt(e.target.dataset.day);
+
+		n = day * 8 // 8 graphics per day
+			+ 1 // first day is zero, first image is 1
+			+ 2 // show the 2pm image
+			- (currentHour > 20 ? 4 : 0); //handle the 8am/8pm switchovers
+
+		document.querySelectorAll("#graphicalforecast-hour button").forEach(e => e.removeAttribute("disabled"));
+		if(e.target.dataset.day > 2) {
+			document.querySelectorAll("#graphicalforecast-hour button").forEach(e => {
+				if ( (parseInt(e.dataset.hour)+1)/3%2 == 0 ) {
+					e.setAttribute("disabled","true");
+				}
+			})
+		}
+	}
+
+	function changeHour() {
+
+		day = parseInt(document.querySelector("#graphicalforecast-day button[data-active='true']").dataset.day);
+
+		hour = parseInt(e.target.dataset.hour);
+
+		n = day * 8 // 8 graphics per day
+			+ (hour+1)/3 // 1 graphic per 3 hours
+			- 2 // Half-day starts at 8am/8pm
+			- (currentHour > 20 ? 4 : 0); // Half-day starts at 8am/8pm
+	}
+
+	if(e.target.hasAttribute("data-day")) {
+
+		changeDay();
+
+	} else if (e.target.hasAttribute("data-hour")) {
+
+		changeHour();
+
+	}
+
+	// Prevent broken images
+	n = n<0 || n>51 ? 1 : n;
+
+	// Primary goal of the function
+	document.querySelector("#graphicalforecast-img").src = `https://graphical.weather.gov/images/massachusetts/WindSpd\${n}_massachusetts.png`;
+
+	if(document.location.search.includes('debug')) {
+		console.log({"day": day, "hour": hour, "currentHour": currentHour, "n": n})
+	}
+
+	return true;
+
+}
+</script>
+HTML;
 		$html .= implode("",array(
 			"<nav id=\"graphicalforecast-day\">",
 			array_reduce( range(0,6), function($str, $i) { return
@@ -381,7 +553,11 @@ HTML;
 		return $html;
 	}
 
-	/** https://tidesandcurrents.noaa.gov/api/ */
+	/**
+	 * Present tide predictions
+	 *
+	 * @see  https://tidesandcurrents.noaa.gov/api/
+	 */
 	public function generateTidesHtml() {
 		$tides = $this->cacheCurlRetrieve(
 			vsprintf(self::TIDES_API, array(
@@ -389,8 +565,11 @@ HTML;
 				strftime("%Y%m%d",strtotime("+6 day"))
 			))
 		);
+
 		$predictions = json_decode( $tides )->predictions;
+
 		$html = "<table>";
+
 		for($i=0; $i<count($predictions); $i+=4) {
 			$data = array(
 				strftime("%a",strtotime($predictions[$i]->t)),
@@ -401,7 +580,9 @@ HTML;
 			);
 			$html.="<tr><td>".implode("</td><td>", $data)."</td></tr>";
 		}
+
 		$html.="</table>";
+
 		return $html;
 	}
 }

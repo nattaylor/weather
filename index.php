@@ -1,21 +1,5 @@
 <?php
 	date_default_timezone_set('America/New_York');
-	
-	/**
-	* Return a formatted string like vsprintf() with named placeholders.
-	*
-	* When a placeholder doesn't have a matching key in `$args`,
-	*   the placeholder is returned as is to see missing args.
-	* @param string $format
-	* @param array $args
-	* @param string $pattern
-	* @return string
-	*/
-	function p($format, array $args, $pattern="/\{(\w+)\}/") {
-		return preg_replace_callback($pattern, function ($matches) use ($args) {
-			return @$args[$matches[1]] ?: $matches[0];
-		}, $format);
-	}
 
 	if(file_exists('.secrets.php')) include('.secrets.php');
 	include('config.php');
@@ -33,16 +17,16 @@
 	$url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en-US">
 <head>
 	<title>Weather</title>
+	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="apple-touch-icon" sizes="128x128" href="icon.png">
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
-	<script src="scripts.js<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>"></script>
 </head>
 <body>	
 	<details id="weather" open>

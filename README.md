@@ -33,13 +33,14 @@ The primary goal is smartphone usability, especially loading time, presentation 
 - Add SailFlow https://api.weatherflow.com/wxengine/rest/graph/getGraph?spot_id=1788&time_start=2019-09-07%2000:00:00&time_end=2019-09-07%2024:00:00&units_wind=kts&fields=wind&wf_token=27c8cfd62708b58ac7fa8d1442326751&color_plot_bg=0xFAFAFA&wind_speed_floor=31&graph_height=330&graph_width=635&type=line4&format=raw&v=1.1&cb=1567869210596
 - Add `manifest.json` for PWA
 - Use a cookie after releases to clear the cache
-- Refactor Javascript into PHP
 - Refactor templating to `p()`
 - Refactor helpers out of classes (should it be a static?)
 - Refactor constants to `config.php`
 - Refector separate data from view
 - Refactor DEBUG --> switch to logging approach?  add email alerts?  Avoid frequent emails by tracking "last sent time"
 - Refactor AFD parser to make it less brittle
+- ~Refactor Javascript into PHP~
+- ~Add Tides~
 - ~Create generalized loop-er (Support navigation, Allow "skip nights" toggle,  Support "Jump to day")!~
 - ~Parameterize TTL on curlCatchRetrieve~
 - ~Clean up HTML comments~
@@ -97,3 +98,21 @@ https://www.windfinder.com/forecast/salem_harbor_pitman_road
 https://www.windfinder.com/forecast/marblehead_neck
 https://ocean.weather.gov/Atl_tab.shtml
 Currents: OSCAR
+
+```
+/**
+* Return a formatted string like vsprintf() with named placeholders.
+*
+* When a placeholder doesn't have a matching key in `$args`,
+*   the placeholder is returned as is to see missing args.
+* @param string $format
+* @param array $args
+* @param string $pattern
+* @return string
+*/
+function p($format, array $args, $pattern="/\{(\w+)\}/") {
+	return preg_replace_callback($pattern, function ($matches) use ($args) {
+		return @$args[$matches[1]] ?: $matches[0];
+	}, $format);
+}
+```
