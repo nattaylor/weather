@@ -31,7 +31,7 @@ The primary goal is smartphone usability, especially loading time, presentation 
 - Look for AFD warnings of "disagreement"
 - Diff the AFD between issuances
 - Add SailFlow https://api.weatherflow.com/wxengine/rest/graph/getGraph?spot_id=1788&time_start=2019-09-07%2000:00:00&time_end=2019-09-07%2024:00:00&units_wind=kts&fields=wind&wf_token=27c8cfd62708b58ac7fa8d1442326751&color_plot_bg=0xFAFAFA&wind_speed_floor=31&graph_height=330&graph_width=635&type=line4&format=raw&v=1.1&cb=1567869210596
-- Add `manifest.json` for PWA
+- Add `manifest.json` for PWA (mostly to control add to homescreen)
 - Use a cookie after releases to clear the cache
 - Refactor templating to `p()`
 - Refactor helpers out of classes (should it be a static?)
@@ -47,6 +47,8 @@ The primary goal is smartphone usability, especially loading time, presentation 
 
 ## Notes
 
+The core [API Documentation](https://forecast-v3.weather.gov/documentation) & https://www.weather.gov/documentation/services-web-api
+
 ### AFD
 
 The current code is bad and in the very least needs to be refactored with better error handling.
@@ -55,10 +57,6 @@ At the risk of over-engineering (for the sake of learning!) I'm contemplating:
 
 * It seems like there is an opportunity to define a grammar like [YACC](http://dinosaur.compilertools.net/yacc/) and then generate the parser from it https://github.com/ircmaxell/PHP-Yacc
 * It also seems like this should be its own library that works with PSR-4: Autoloader
-
-## References
-
-* [API Documentation](https://forecast-v3.weather.gov/documentation) & https://www.weather.gov/documentation/services-web-api
 
 ### Weather Map Loop
 https://origin.wpc.ncep.noaa.gov/basicwx/day0-7loop.html
@@ -98,6 +96,8 @@ https://www.windfinder.com/forecast/salem_harbor_pitman_road
 https://www.windfinder.com/forecast/marblehead_neck
 https://ocean.weather.gov/Atl_tab.shtml
 Currents: OSCAR
+
+### Named placeholder string formatting
 
 ```
 /**
