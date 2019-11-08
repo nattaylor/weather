@@ -24,10 +24,11 @@ class Weather {
 	private $stations;
 	private $stationId;
 
+	const POINT_ENDPOINT            = "https://api.weather.gov/points/%s";
 	const STATIONS_ENDPOINT         = "https://api.weather.gov/points/%s/stations";
-	const STATION_CURRENT_ENDPOINT  = "https://api.weather.gov/stations/%s/observations/current";
-	const FORECAST_DAILY_ENDPOINT   = "https://api.weather.gov/points/%s/forecast";
-	const FORECAST_HOURLY_ENDPOINT  = "https://api.weather.gov/points/%s/forecast/hourly";
+	const STATION_CURRENT_ENDPOINT  = "https://api.weather.gov/stations/%s/observations/latest";
+	const FORECAST_DAILY_ENDPOINT   = "https://api.weather.gov/gridpoints/BOX/%s/forecast";
+	const FORECAST_HOURLY_ENDPOINT  = "https://api.weather.gov/gridpoints/BOX/%s/forecast/hourly";
 	const WEBURL                    = "https://forecast-v3.weather.gov/point/%s";
 	const GEOCODING_ENDPOINT        = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 	const RADAR_BASE                = "https://radar.weather.gov/RadarImg/NCR/BOX/";
@@ -50,31 +51,96 @@ class Weather {
 	function __construct($options) {
 		$this->setupTemplates();
 		$this->options = (object)$options;
-		$this->forecast = $this->retrieveForecast($this->options->location);
-		$this->current  = $this->retrieveCurrentObservation($this->options->location);
+		$this->expireCache();
+		$this->point = json_decode($this->cacheCurlRetrieve(sprintf(self::POINT_ENDPOINT, $this->options->location)));
+		$this->forecast = (object)[];
+		$this->forecast->daily = json_decode($this->cacheCurlRetrieve($this->point->properties->forecast));
+		$this->forecast->hourly = json_decode($this->cacheCurlRetrieve($this->point->properties->forecastHourly));
+		$this->current  = $this->retrieveCurrentObservation($this->point->properties->observationStations);
 	}
 
-	function curlRetrieve($url) {
-		$ch = curl_init($url); 
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); 
+	private function curlRetrieve($url) {
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, USERAGENT);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
 		curl_setopt($ch, CURLOPT_VERBOSE, true);
-		$output = curl_exec($ch); 
+		curl_setopt($ch, CURLOPT_HEADER, 1);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2_0);
+		$output = curl_exec($ch);
+		$size = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 		curl_close($ch);
-		return $output;
+		return $this->parseResponse($output, $size);
 	}
 
-	function cacheCurlRetrieve($url, $ttl=NULL) {
+	private function cacheCurlRetrieve($url, $ttl=NULL) {
+		$filename = hash('md5',$url);
+		$files = file_exists("cache/cache.dat") ? json_decode(file_get_contents("cache/cache.dat")) : (object) [];
+		//var_dump($files);
+		/*
 		$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
 		$this->debug['TMPDIR'] = getenv('TMPDIR');
-		if(is_null($ttl)) {
+		if (is_null($ttl)) {
 			$ttl = (strpos($url, 'forecast') || strpos($url, 'observation') || strpos($url, 'radar')) ? self::SHORT_TTL : self::LONG_TTL;
 		}
-		if(!file_exists($filename) || filemtime($filename)<time()-$ttl) {
-			file_put_contents($filename, $this->curlRetrieve($url));
+		*/
+		if (!file_exists("cache/".$filename)) {
+			$response = $this->curlRetrieve($url);
+			if (json_decode($response[0])->status == 404) {
+				return $response[0];
+			}
+			if (isset($response[1]['cache-control'])) {
+				if (preg_match('/max-age=(?<max_age>[0-9]+)/', $response[1]['cache-control'], $match)) {
+				}
+			}
+			$expire = isset($match['max_age']) ? intval($match['max_age']) : self::SHORT_TTL;
+			if (file_put_contents("cache/".$filename, $response[0])) {
+				$files->$filename = $expire;
+			}
 		}
-		return file_get_contents($filename);
+		file_put_contents("cache/cache.dat", json_encode($files, JSON_PRETTY_PRINT));
+
+		try {
+			$content = file_get_contents("cache/".$filename);
+			if ($content === false) {
+				$response[0];
+			}
+		} catch (Exception $e) {
+			//
+		}
+		return $content;
+	}
+
+	private function parseResponse($output, $size) {
+		$headersStr = substr($output, 0, $size);
+		$body = substr($output, $size);
+		$headers = [];
+		$statusLine;
+		foreach (explode("\r\n", trim($headersStr)) as $header) {
+			if (!isset($statusLine)) {
+				$statusLine = $header;
+				continue;
+			}
+			list($name, $value) = explode(":", $header);
+			$headers[strtolower($name)] = trim($value);
+		}
+		return [$body, $headers];
+	}
+
+	private function expireCache() {
+		if (!file_exists("cache/cache.dat")) {
+			return true;
+		}
+		$files = json_decode(file_get_contents("cache/cache.dat"));
+		foreach ((array)$files as $filename => $ttl) {
+			if (filemtime("cache/".$filename) <= time()-$ttl) {
+				if (unlink("cache/".$filename)) {
+					unset($files->$filename);
+				}
+			}
+		}
+		file_put_contents("cache/cache.dat", json_encode($files));
+		return true;
 	}
 
 	/** Helper to return regex matches */
@@ -151,10 +217,10 @@ HTML;
 	 * @param  String $location latlong
 	 * @return Object the station current observation
 	 */
-	function retrieveCurrentObservation($location) {
-		$this->stations  = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATIONS_ENDPOINT, $location) ) );
+	private function retrieveCurrentObservation($url) {
+		$this->stations = json_decode($this->cacheCurlRetrieve($url));
 		$this->stationId = $this->stations->features[0]->properties->stationIdentifier;
-		$observation = json_decode( $this->cacheCurlRetrieve( sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId) ) );
+		$observation = json_decode($this->cacheCurlRetrieve(sprintf(self::STATION_CURRENT_ENDPOINT, $this->stationId)));
 		return $observation;
 	}
 
@@ -305,6 +371,7 @@ HTML;
 			case 'tsra_hi':      return '⛈️'; break;
 			case 'tsra_sct':     return '⛈️'; break;
 			case 'wind_sct':     return '🌤️'; break;
+			case 'wind_skc':     return '🌬️'; break;
 			case 'hot':          return '🌡️'; break;
 			default:             return '⁉️'; break;
 		} 
