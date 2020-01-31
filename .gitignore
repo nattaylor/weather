@@ -3,3 +3,4 @@ config.php
 weather.sublime-project
 weather.sublime-workspace
 weathertmp_*
+cache/

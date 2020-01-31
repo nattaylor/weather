@@ -7,6 +7,7 @@ Display weather from the National Weather Service
 1. Edit the Bot name and rename `config.example.php` to `config.php`
 2. If you want to use reverse GeoCoding create `.secrets.php` and add `<?php const GEOCODING_APIKEY = "YourKey";`
 3. Deploy somewhere that runs PHP.
+4. Ensure the `cache/` directory is writeable
 
 For litespeed, I use the following `.htaccess` caching configuration:
 
@@ -27,8 +28,11 @@ The primary goal is smartphone usability, especially loading time, presentation 
 
 ## TODO
 
+- Implement `/icons`
+- Implement `/glossary`
 - Implement location configuration
-- Look for AFD warnings of "disagreement"
+- Display the synopsis as an `<summary>`
+- Look for AFD warnings of "disagreement" or confidence or storm
 - Diff the AFD between issuances
 - Add SailFlow https://api.weatherflow.com/wxengine/rest/graph/getGraph?spot_id=1788&time_start=2019-09-07%2000:00:00&time_end=2019-09-07%2024:00:00&units_wind=kts&fields=wind&wf_token=27c8cfd62708b58ac7fa8d1442326751&color_plot_bg=0xFAFAFA&wind_speed_floor=31&graph_height=330&graph_width=635&type=line4&format=raw&v=1.1&cb=1567869210596
 - Add `manifest.json` for PWA (mostly to control add to homescreen)
@@ -36,9 +40,11 @@ The primary goal is smartphone usability, especially loading time, presentation 
 - Refactor templating to `p()`
 - Refactor helpers out of classes (should it be a static?)
 - Refactor constants to `config.php`
+- Refactor to use a baseurl (see Swagger)
 - Refector separate data from view
 - Refactor DEBUG --> switch to logging approach?  add email alerts?  Avoid frequent emails by tracking "last sent time"
 - Refactor AFD parser to make it less brittle
+- ~Implement `/gridpoint/`~
 - ~Refactor Javascript into PHP~
 - ~Add Tides~
 - ~Create generalized loop-er (Support navigation, Allow "skip nights" toggle,  Support "Jump to day")!~

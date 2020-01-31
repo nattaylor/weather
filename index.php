@@ -74,7 +74,7 @@
 	<details id="afd">
 		<summary class="section-summary">Area Forecast Discussion</summary>
 		<div><?php echo $afd->generateAfdHtml(); ?></div>
-		<p><a href="https://forecast-v3.weather.gov/products/locations/BOX/AFD/1?glossary=1">Open area forecast discussion on weather.gov</a></p>
+		<p><a href="https://forecast.weather.gov/product.php?site=BOX&issuedby=BOX&product=AFD&format=TXT&version=1&glossary=0&highlight=off">Open area forecast discussion on weather.gov</a></p>
 	</details>
 
 	<details id="links">

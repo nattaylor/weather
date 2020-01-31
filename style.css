@@ -1,5 +1,5 @@
 html {
-	font-family: sans-serif;
+	font-family: system-ui;
 }
 
 body {
@@ -152,6 +152,14 @@ body {
 	border:1px solid black;
 	margin: 0.25rem;
 	padding: 0.25rem 0.5rem;
+}
+
+#afd p {
+	font-family: sans-serif;
+	font-size: 1.3em;
+	line-height: 1.25em;
+	word-wrap: break-word;
+	hyphens: auto;
 }
 
 details {

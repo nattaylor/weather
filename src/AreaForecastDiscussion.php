@@ -39,6 +39,7 @@ class AreaForecastDiscussion {
 
 	function __construct($options) {
 		$this->options = (object)$options;
+		$this->options->office = "BOX";
 		$this->setupHelpers();
 		$this->afdRaw = $this->retrieveAreaForecastDiscussion();
 		$this->forecast = $this->parseAreaForecastDiscussion($this->afdRaw);
@@ -59,7 +60,7 @@ class AreaForecastDiscussion {
 
 		if (!function_exists('cacheCurlRetrieve')) {
 			function cacheCurlRetrieve($url) {
-				$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
+				$filename = "cache/".'weathertmp_'.hash('md5',$url);
 				if(!file_exists($filename) || filemtime($filename)<time()-3600) {
 					file_put_contents($filename, curlRetrieve($url));
 				}
@@ -69,9 +70,9 @@ class AreaForecastDiscussion {
 	}
 
 	function retrieveAreaForecastDiscussion() {
-		$latestProductUrl = json_decode(cacheCurlRetrieve(sprintf(self::APIENDPOINT, $this->options->office)))->{"@graph"}[0]->{"@id"};
+		$response = cacheCurlRetrieve(sprintf(self::APIENDPOINT, $this->options->office));
+		$latestProductUrl = json_decode($response)->{"@graph"}[0]->{"@id"};
 		return json_decode(cacheCurlRetrieve($latestProductUrl))->productText;
-
 	}
 
 	/**
@@ -116,6 +117,7 @@ class AreaForecastDiscussion {
 	}
 
 	function generateAfdHtml() {
+		echo sprintf("<!-- %s -->", json_encode($this->forecast));
 		foreach(json_decode( $this->forecast )->sections as $section) {
 			echo "<h2>{$section[0][0]}</h2>".PHP_EOL;
 			if (isset($section[0][1])) echo "<p>{$section[0][1]}</p>".PHP_EOL;

@@ -11,6 +11,8 @@
  * $weather = new Weather(array("location"=>"42.3755,-71.0368","reverse_geo_code"=>false));
  * echo $weather->generateCurrentAndForecastHtml();
  * ```
+ *
+ * https://www.weather.gov/documentation/services-web-api
  */
 
 class Weather {
@@ -20,16 +22,17 @@ class Weather {
 	private $templates;
 	private $current;
 	private $geo;
-	private $debug;
+	private $debug = ["logs"=>[]];
 	private $stations;
 	private $stationId;
+	private $healthCheck;
 
 	const POINT_ENDPOINT            = "https://api.weather.gov/points/%s";
 	const STATIONS_ENDPOINT         = "https://api.weather.gov/points/%s/stations";
 	const STATION_CURRENT_ENDPOINT  = "https://api.weather.gov/stations/%s/observations/latest";
 	const FORECAST_DAILY_ENDPOINT   = "https://api.weather.gov/gridpoints/BOX/%s/forecast";
 	const FORECAST_HOURLY_ENDPOINT  = "https://api.weather.gov/gridpoints/BOX/%s/forecast/hourly";
-	const WEBURL                    = "https://forecast-v3.weather.gov/point/%s";
+	const WEBURL                    = "https://forecast.weather.gov/MapClick.php?lat=42.37458823179665&lon=-71.03582395942152";
 	const GEOCODING_ENDPOINT        = "https://geoservices.tamu.edu/Services/ReverseGeocoding/WebService/v04_01/Rest/?lat=%s&lon=%s&format=json&notStore=false&version=4.10&apikey=%s";
 	const RADAR_BASE                = "https://radar.weather.gov/RadarImg/NCR/BOX/";
 	const BUOY_ENDPOINT             = "https://www.ndbc.noaa.gov/data/latest_obs/%s.rss";
@@ -49,14 +52,20 @@ class Weather {
 	 * @param Array $options
 	 */
 	function __construct($options) {
+		$this->forecast = (object)[];
 		$this->setupTemplates();
 		$this->options = (object)$options;
 		$this->expireCache();
+
+		//TODO: Stop if the first one fails
 		$this->point = json_decode($this->cacheCurlRetrieve(sprintf(self::POINT_ENDPOINT, $this->options->location)));
-		$this->forecast = (object)[];
 		$this->forecast->daily = json_decode($this->cacheCurlRetrieve($this->point->properties->forecast));
 		$this->forecast->hourly = json_decode($this->cacheCurlRetrieve($this->point->properties->forecastHourly));
 		$this->current  = $this->retrieveCurrentObservation($this->point->properties->observationStations);
+	}
+
+	private function x() {
+
 	}
 
 	private function curlRetrieve($url) {
@@ -73,21 +82,25 @@ class Weather {
 		return $this->parseResponse($output, $size);
 	}
 
-	private function cacheCurlRetrieve($url, $ttl=NULL) {
-		$filename = hash('md5',$url);
+	private function cacheCurlRetrieve($url, $ttl = null) {
+		$filename = hash('md5', $url);
 		$files = file_exists("cache/cache.dat") ? json_decode(file_get_contents("cache/cache.dat")) : (object) [];
 		//var_dump($files);
 		/*
 		$filename = getenv('TMPDIR').'weathertmp_'.hash('md5',$url);
-		$this->debug['TMPDIR'] = getenv('TMPDIR');
+		
 		if (is_null($ttl)) {
 			$ttl = (strpos($url, 'forecast') || strpos($url, 'observation') || strpos($url, 'radar')) ? self::SHORT_TTL : self::LONG_TTL;
 		}
 		*/
+		$this->debug['TMPDIR'] = getcwd();
+		array_push($this->debug["logs"], "Tried retrieving $url");
+
 		if (!file_exists("cache/".$filename)) {
 			$response = $this->curlRetrieve($url);
 			if (json_decode($response[0])->status == 404) {
-				return $response[0];
+				array_push($this->debug["logs"], "404 status for $url");
+				return false;
 			}
 			if (isset($response[1]['cache-control'])) {
 				if (preg_match('/max-age=(?<max_age>[0-9]+)/', $response[1]['cache-control'], $match)) {
@@ -98,15 +111,25 @@ class Weather {
 				$files->$filename = $expire;
 			}
 		}
-		file_put_contents("cache/cache.dat", json_encode($files, JSON_PRETTY_PRINT));
+
+		//TODO: Check for 404s etc
+
+		try {
+			$write = file_put_contents("cache/cache.dat", json_encode($files, JSON_PRETTY_PRINT));
+			if ($write === false) {
+				throw new Exception("Failed to write $filename");
+			}
+		} catch (Exception $e) {
+			array_push($this->debug["logs"], "{$e->getMessage()}");
+		}
 
 		try {
 			$content = file_get_contents("cache/".$filename);
 			if ($content === false) {
-				$response[0];
+				throw new Exception("Failed to get contents");
 			}
 		} catch (Exception $e) {
-			//
+			array_push($this->debug["logs"], "{$e->getMessage()}");
 		}
 		return $content;
 	}
@@ -340,6 +363,7 @@ HTML;
 
 	/**
 	 * iconHelper parses the icons from https://w1.weather.gov/xml/current_obs/weather.php into unicode
+	 * see https://www.weather.gov/documentation/services-web-api#/default/get_icons
 	 * @param  [type] $iconUrl [description]
 	 * @return [type]          [description]
 	 */
@@ -401,7 +425,8 @@ HTML;
 	}
 
 	function generateDebugHtml() {
-		$html = implode(PHP_EOL,array(
+		$html = implode("<br>", $this->debug["logs"]);
+		$html .= implode(PHP_EOL,array(
 			"<script>",
 			sprintf("console.log('TMPDIR: %s')", $this->debug['TMPDIR'] ?? "current"),
 			sprintf("let forecast = %s", json_encode( $this->forecast, JSON_PRETTY_PRINT )),
@@ -419,8 +444,9 @@ HTML;
 	 * @return  String HTML to present latest buoy observations
 	 */
 	function generateBuoyHtml() {
-		$xml = simplexml_load_string($this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013), 3600),null,LIBXML_NOCDATA);
-		return $xml->channel->item->description;
+		$response = $this->cacheCurlRetrieve(sprintf(self::BUOY_ENDPOINT, 44013), 3600);
+		$xml = simplexml_load_string($response,null,LIBXML_NOCDATA);
+		return sprintf("<!-- %s -->", $response).$xml->channel->item->description;
 	}
 
 	/**
@@ -623,17 +649,17 @@ HTML;
 	/**
 	 * Present tide predictions
 	 *
-	 * @see  https://tidesandcurrents.noaa.gov/api/
+	 * @see https://tidesandcurrents.noaa.gov/api/
 	 */
 	public function generateTidesHtml() {
 		$tides = $this->cacheCurlRetrieve(
 			vsprintf(self::TIDES_API, array(
 				strftime("%Y%m%d"),
-				strftime("%Y%m%d",strtotime("+6 day"))
+				strftime("%Y%m%d", strtotime("+6 day"))
 			))
 		);
 
-		$predictions = json_decode( $tides )->predictions;
+		$predictions = json_decode($tides)->predictions;
 
 		$html = "<table>";
 
