@@ -30,7 +30,7 @@
 </head>
 <body>	
 	<details id="weather" open>
-		<summary class="section-summary">Weather: Boston, MA</summary>
+		<summary class="section-summary">Weather: Boston, MA, <?php echo $weather->generateTimestamp(); ?></summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>
 		<p style="text-align:right"><a href="<?php echo $weather->generateWebUrl(); ?>">Open Forecast on weather.gov</a></p>
 	</details>
@@ -101,5 +101,12 @@
 
 	<div>&nbsp;</div>
 	<?php if(isset($_GET['debug'])) echo $weather->generateDebugHtml(); ?>
+	<script type="text/javascript">
+		window.addEventListener('DOMContentLoaded', (event) => {
+			let content = document.querySelector("#afd > div > p:nth-child(2)").innerText;
+			document.querySelector("#afd-summary").innerText = content;
+		});
+		
+	</script>
 </body>
 </html>

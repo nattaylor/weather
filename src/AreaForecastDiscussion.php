@@ -117,8 +117,7 @@ class AreaForecastDiscussion {
 	}
 
 	function generateAfdHtml() {
-		echo sprintf("<!-- %s -->", json_encode($this->forecast));
-		foreach(json_decode( $this->forecast )->sections as $section) {
+		foreach (json_decode( $this->forecast )->sections as $section) {
 			echo "<h2>{$section[0][0]}</h2>".PHP_EOL;
 			if (isset($section[0][1])) echo "<p>{$section[0][1]}</p>".PHP_EOL;
 			foreach(explode("\n", $section[1]) as $line) {

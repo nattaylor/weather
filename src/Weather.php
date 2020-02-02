@@ -40,8 +40,8 @@ class Weather {
 	const SHORT_TTL                 = 3600;
 	// For infrequently updated resources like metadata
 	const LONG_TTL                  = 604800;
-	const WEATHER_MAPS2             = array("/sfc/loopimagesfcwbg.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
-	const WEATHER_MAPS              = array("/sfc/loopimagesfcwbg.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAPS2             = array("/sfc/91fndfd_loop.gif", "/basicwx/93fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/95fndfd_loop.gif", "/basicwx/96fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/basicwx/99fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
+	const WEATHER_MAPS              = array("/basicwx/91fndfd_loop.gif", "/basicwx/94fndfd_loop.gif", "/basicwx/98fndfd_loop.gif", "/medr/9jhwbgloop.gif", "/medr/9khwbgloop.gif", "/medr/9lhwbgloop.gif", "/medr/9mhwbgloop.gif", "/medr/9nhwbgloop.gif");
 	const WEATHER_MAP_BASE          = "https://origin.wpc.ncep.noaa.gov%s";
 	const SATELITE_LISTING          = "https://cdn.star.nesdis.noaa.gov/GOES16/ABI/SECTOR/ne/GEOCOLOR/";
 	const GRAPHICAL_BASE            = "https://graphical.weather.gov/images/massachusetts/WindSpd%s_massachusetts.png";
@@ -199,7 +199,7 @@ class Weather {
 	</details>
 HTML;
 		$this->templates->weatherCurrent = <<<HTML
-<details class="current-details" open>
+<details class="current-details">
 	<summary class="current-summary">
 		<span class="current-period">%s</span>
 		<span class="weather-short">%s</span>
@@ -207,6 +207,7 @@ HTML;
 			<span class="current-icon">%s</span>
 		</div>
 	</summary>
+	<div id="afd-summary"></div>
 </details>
 HTML;
 		$this->templates->hourly = <<<HTML
@@ -349,8 +350,12 @@ HTML;
 			"Wind ".$windDirection($this->current->properties->windDirection->value)." ".strval(round($this->current->properties->windSpeed->value*3600/1609))." MPH",
 			$this->helperIconNwsToUnicode($this->current->properties->icon)
 		));
-
 		return $html;
+	}
+
+	/** Time */
+	public function generateTimestamp() {
+		return strftime("%a %l:%M%p", strtotime($this->current->properties->timestamp));
 	}
 
 	/** Wrapper to generate current conditions and forecast HTML */
