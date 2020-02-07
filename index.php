@@ -20,13 +20,14 @@
 		  CURLOPT_ENCODING => "",
 		  CURLOPT_MAXREDIRS => 10,
 		  CURLOPT_TIMEOUT => 1,
+		  CURLOPT_HEADER => 1,
 		  CURLOPT_FOLLOWLOCATION => true,
 		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
 		  CURLOPT_CUSTOMREQUEST => "PURGE",
 		));
 
 		$response = curl_exec($curl);
-
+		echo sprintf("<!-- %s -->", json_encode(curl_getinfo($curl)));
 		curl_close($curl);
 	}
 	
