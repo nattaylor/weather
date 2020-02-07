@@ -5,6 +5,30 @@
 	include('config.php');
 	include('src/Weather.php');
 	include('src/AreaForecastDiscussion.php');
+
+	$url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
+
+	if (isset($_GET['purge'])) {
+		foreach (glob("cache/*") as $filename) {
+			unlink($filename);
+		}
+		$curl = curl_init();
+
+		curl_setopt_array($curl, array(
+		  CURLOPT_URL => $url,
+		  CURLOPT_RETURNTRANSFER => false,
+		  CURLOPT_ENCODING => "",
+		  CURLOPT_MAXREDIRS => 10,
+		  CURLOPT_TIMEOUT => 1,
+		  CURLOPT_FOLLOWLOCATION => true,
+		  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+		  CURLOPT_CUSTOMREQUEST => "PURGE",
+		));
+
+		$response = curl_exec($curl);
+
+		curl_close($curl);
+	}
 	
 	$weather = new Weather(array(
 		"location"=>"42.3755,-71.0368",
@@ -14,7 +38,6 @@
 
 	$afd = new AreaForecastDiscussion(array("office"=>$weather->getOffice()));
 
-	$url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}";
 ?>
 <!DOCTYPE html>
 <html lang="en-US">
