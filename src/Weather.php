@@ -380,7 +380,7 @@ HTML;
 		if (preg_match('/partly sunny/i', $detail)) {
 			$iconKey = 'partly';
 		}
-		switch($iconKey) {
+		switch ($iconKey) {
 			case 'bkn':          return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
 			case 'skc':          return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
 			case 'few':          return '☀️'; break; //A Few Clouds | A Few Clouds with Haze | A Few Clouds and Breezy
@@ -408,9 +408,9 @@ HTML;
 			case 'wind_sct':     return '🌤️'; break;
 			case 'wind_skc':     return '🌬️'; break;
 			case 'hot':          return '🌡️'; break;
-			case 'parlty'        return '🌦'; break;
+			case 'partly':       return '🌦'; break;
 			default:             return '⁉️'; break;
-		} 
+		}
 		return $iconKey;
 	}
 
