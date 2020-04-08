@@ -378,7 +378,7 @@ HTML;
 	function helperIconNwsToUnicode($iconUrl, $detail) {
 		$iconKey = $this->match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
 		if (preg_match('/partly sunny/i', $detail)) {
-			$iconKey = 'bkn';
+			$iconKey = 'partly';
 		}
 		switch($iconKey) {
 			case 'bkn':          return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
@@ -408,6 +408,7 @@ HTML;
 			case 'wind_sct':     return '🌤️'; break;
 			case 'wind_skc':     return '🌬️'; break;
 			case 'hot':          return '🌡️'; break;
+			case 'parlty'        return '🌦'; break;
 			default:             return '⁉️'; break;
 		} 
 		return $iconKey;
