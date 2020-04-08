@@ -97,6 +97,7 @@ class Weather {
 		array_push($this->debug["logs"], "Tried retrieving $url");
 
 		if (!file_exists("cache/".$filename)) {
+			array_push($this->debug["logs"], "Not cached $url");
 			$response = $this->curlRetrieve($url);
 			if (json_decode($response[0])->status == 404) {
 				array_push($this->debug["logs"], "404 status for $url");
@@ -157,9 +158,11 @@ class Weather {
 		$files = json_decode(file_get_contents("cache/cache.dat"));
 		foreach ((array)$files as $filename => $ttl) {
 			if (filemtime("cache/".$filename) <= time()-$ttl) {
+				array_push($this->debug["logs"], "$filename expired.");
 				if (unlink("cache/".$filename)) {
 					unset($files->$filename);
 				}
+			} else {
 			}
 		}
 		file_put_contents("cache/cache.dat", json_encode($files));
@@ -270,7 +273,7 @@ HTML;
 					$periods[0]->name,
 					$this->helperShortShortener($periods[0]->shortForecast),
 					$this->helperChanceOfPrecip(array($periods[0]->detailedForecast,"")),
-					$this->helperIconNwsToUnicode($periods[0]->icon),
+					$this->helperIconNwsToUnicode($periods[0]->icon, ""),
 					"",
 					$periods[0]->temperature."&deg;",
 					$periods[0]->detailedForecast,
@@ -287,7 +290,7 @@ HTML;
 					($i>0) ? $periods[$i]->name . ", ". date ( "M j", strtotime($periods[$i]->startTime) ) : $periods[$i]->name,
 					$this->helperShortShortener($periods[$i]->shortForecast),
 					$this->helperChanceOfPrecip(array($periods[$i]->detailedForecast,$periods[$i+1]->detailedForecast)),
-					$this->helperIconNwsToUnicode($periods[$i]->icon),
+					$this->helperIconNwsToUnicode($periods[$i]->icon, $periods[$i]->detailedForecast),
 					$periods[$i]->temperature."&deg;",
 					$periods[$i+1]->temperature."&deg;",
 					$periods[$i]->detailedForecast." Overnight: ".$periods[$i+1]->detailedForecast,
@@ -307,7 +310,7 @@ HTML;
 			if($datetime->format('Y-m-d') == $date && $datetime->format('h')%2 == 0) {
 				$html .= vsprintf($this->templates->hourly, array(
 								"{$period->temperature}&deg;",
-								$this->helperIconNwsToUnicode($period->icon),
+								$this->helperIconNwsToUnicode($period->icon, ""),
 								$datetime->format('g A')
 							)
 						);
@@ -348,7 +351,7 @@ HTML;
 				$this->current->properties->textDescription)
 			),
 			"Wind ".$windDirection($this->current->properties->windDirection->value)." ".strval(round($this->current->properties->windSpeed->value*3600/1609))." MPH",
-			$this->helperIconNwsToUnicode($this->current->properties->icon)
+			$this->helperIconNwsToUnicode($this->current->properties->icon, "")
 		));
 		return $html;
 	}
@@ -372,8 +375,11 @@ HTML;
 	 * @param  [type] $iconUrl [description]
 	 * @return [type]          [description]
 	 */
-	function helperIconNwsToUnicode($iconUrl) {
+	function helperIconNwsToUnicode($iconUrl, $detail) {
 		$iconKey = $this->match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
+		if (preg_match('/partly sunny/i', $detail)) {
+			$iconKey = 'bkn';
+		}
 		switch($iconKey) {
 			case 'bkn':          return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
 			case 'skc':          return '☀️'; break; //Fair | Clear | Fair with Haze | Clear with Haze | Fair and Breezy | Clear and Breezy
