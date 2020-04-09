@@ -379,6 +379,8 @@ HTML;
 		$iconKey = $this->match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
 		if (preg_match('/partly sunny/i', $detail)) {
 			$iconKey = 'partly';
+		} else if (preg_match('/mostly sunny/i', $detail)) {
+			$iconKey = 'bkn';
 		}
 		switch ($iconKey) {
 			case 'bkn':          return '⛅'; break; //Mostly Cloudy | Mostly Cloudy with Haze | Mostly Cloudy and Breezy
