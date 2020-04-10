@@ -377,7 +377,9 @@ HTML;
 	 */
 	function helperIconNwsToUnicode($iconUrl, $detail) {
 		$iconKey = $this->match_all($iconUrl, '/\/([a-z_]+?)(,[0-9]*)?\?/')[0][1];
-		if (preg_match('/partly sunny/i', $detail)) {
+		if (in_array($iconKey, ['few', 'sct'])) {
+			//
+		} else if (preg_match('/partly sunny/i', $detail)) {
 			$iconKey = 'partly';
 		} else if (preg_match('/mostly sunny/i', $detail)) {
 			$iconKey = 'bkn';
