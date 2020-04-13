@@ -27,7 +27,7 @@
 		));
 
 		$response = curl_exec($curl);
-		echo sprintf("<!-- %s -->", json_encode(curl_getinfo($curl)));
+		echo sprintf("<!-- %s -->", $response);
 		curl_close($curl);
 	}
 	
@@ -52,7 +52,7 @@
 	<link rel="icon" sizes="128x128" href="icon.png">
 	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
 </head>
-<body>	
+<body>
 	<details id="weather" open>
 		<summary class="section-summary">Weather: Boston, MA, <?php echo $weather->generateTimestamp(); ?></summary>
 		<?php echo $weather->generateCurrentAndForecastHtml(); ?>
@@ -103,7 +103,8 @@
 
 	<details id="links">
 		<summary class="section-summary">Links</summary>
-		<ul>
+		<ul class="links">
+			<li><a href="https://www.windy.com/?42.428,-70.800,7,i:pressure">Windy</a></li>
 			<li><a href="https://www.windfinder.com/forecast/marblehead_neck">https://www.windfinder.com/forecast/marblehead_neck</a></li>
 			<li><a href="https://sailflow.com/spot/1788">SaiFlow: Children's Island</a></li>
 		</ul>
@@ -122,15 +123,40 @@
 		<button onclick="document.location.hash='#'">x</button>
 		<input type="text" placeholder="Zip Code">
 	</div>
-
+<?php
+		if (isset($_GET['debug'])) {
+			$html = $weather->generateDebugHtml();
+			echo <<<HTML
+	<details>
+		<summary class="section-summary">Debug</summary>
+		$html
+	</details>
+HTML;
+		}
+	?>
 	<div>&nbsp;</div>
-	<?php if(isset($_GET['debug'])) echo $weather->generateDebugHtml(); ?>
+	
 	<script type="text/javascript">
 		window.addEventListener('DOMContentLoaded', (event) => {
 			let content = document.querySelector("#afd > div > p:nth-child(2)").innerText;
 			document.querySelector("#afd-summary").innerText = content;
 		});
-		
+		document.querySelectorAll("button")
+			.forEach(function(e) {
+				e.addEventListener("click", function() {
+					var toast = document.createElement("div");
+					toast.classList.add("toast");
+					toast.innerText = "Loading...";
+					document.body.appendChild(toast);
+				})
+			});
+		document.querySelectorAll("#graphicalforecast-img, #weathermaps-img").forEach(function(e) {
+			e.addEventListener("load", function() {
+				if (document.querySelector(".toast") !== null) {
+					document.body.removeChild(document.querySelector(".toast"));
+				}
+			})
+		});
 	</script>
 </body>
 </html>

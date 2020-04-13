@@ -60,7 +60,7 @@ body {
 }
 
 .weather-summary::-webkit-details-marker, .current-summary::-webkit-details-marker {
-  display: none;
+	display: none;
 }
 
 .weather-detailed {
@@ -171,4 +171,19 @@ details {
 		width:320px;
 		margin: 5vw auto;
 	}
+}
+
+.toast {
+		position: fixed;
+		left: calc(50% - 37px);
+		bottom: 1em;
+		background-color: lightgray;
+		width: 75px;
+		border-radius: 1em;
+		text-align: center;
+		padding: 0.5em;
+}
+
+.links li {
+	margin-bottom: 1em;
 }
