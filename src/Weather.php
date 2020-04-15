@@ -293,7 +293,7 @@ HTML;
 					$this->helperIconNwsToUnicode($periods[$i]->icon, $periods[$i]->detailedForecast),
 					$periods[$i]->temperature."&deg;",
 					$periods[$i+1]->temperature."&deg;",
-					$periods[$i]->detailedForecast." Overnight: ".$periods[$i+1]->detailedForecast,
+					$periods[$i]->detailedForecast."<br>Overnight: ".$periods[$i+1]->detailedForecast,
 					$hourlyHtml)
 				);
 		}
@@ -302,12 +302,12 @@ HTML;
 
 	/** Helper to generate the hourly forecast widgets */
 
-	function generateHourlyHtml($dayPeriod) {
+	public function generateHourlyHtml($dayPeriod) {
 		$html = "";
 		$date = date('Y-m-d', strtotime($dayPeriod->startTime));
-		foreach($this->forecast->hourly->properties->periods as $period) {
+		foreach ($this->forecast->hourly->properties->periods as $period) {
 			$datetime = new DateTime($period->startTime);
-			if($datetime->format('Y-m-d') == $date && $datetime->format('h')%2 == 0) {
+			if ($datetime->format('Y-m-d') == $date && $datetime->format('h')%2 == 0) {
 				$html .= vsprintf($this->templates->hourly, array(
 								"{$period->temperature}&deg;",
 								$this->helperIconNwsToUnicode($period->icon, ""),
@@ -324,10 +324,10 @@ HTML;
 	 *
 	 * @return String HTML to present the observation
 	 */
-	function generateCurrentObservationHtml() {
-		if(!isset($this->current->properties)) {
-			unlink('weathertmp_'.hash('md5',sprintf( self::STATION_CURRENT_ENDPOINT, $this->stationId)));
-			return sprintf("Error retrieving current conditions. <!-- %s -->",json_encode( $this->current , JSON_PRETTY_PRINT));
+	public function generateCurrentObservationHtml() {
+		if (!isset($this->current->properties)) {
+			unlink('weathertmp_'.hash('md5', sprintf(self::STATION_CURRENT_ENDPOINT, $this->stationId)));
+			return sprintf("Error retrieving current conditions. <!-- %s -->", json_encode($this->current, JSON_PRETTY_PRINT));
 		}
 		$html = "";
 		$windDirection = function($w) {
@@ -484,8 +484,9 @@ HTML;
 			$day = strftime("%a",strtotime("+".($i-1)." day"));
 			return $str.="<button onclick=\"document.querySelector(&quot;#weathermaps-img&quot;).src=&quot;$url&quot;\">$day</button>";
 		});
-		$html .= "<img id=\"weathermaps-img\" src=\"".sprintf(self::WEATHER_MAP_BASE,self::WEATHER_MAPS[0])."\" style=\"max-width:100%\" />";
+		
 		$html .= "</nav>";
+		$html .= "<img id=\"weathermaps-img\" src=\"".sprintf(self::WEATHER_MAP_BASE,self::WEATHER_MAPS[0])."\" style=\"max-width:100%\" />";
 		return $html;
 	}
 
@@ -633,6 +634,7 @@ function changeGraphicalForecastAndControlUI(e) {
 }
 </script>
 HTML;
+		$html .= "<select><option>Wind</option></select>";
 		$html .= implode("",array(
 			"<nav id=\"graphicalforecast-day\">",
 			array_reduce( range(0,6), function($str, $i) { return
@@ -648,12 +650,11 @@ HTML;
 
 		$html .= implode("",array(
 			"<nav id=\"graphicalforecast-hour\">",
-			array_reduce([2,5,8,11,2,5,8,11],function($str, $i) use (&$k) {
+			array_reduce([2,5,8,11,2,5,8,11], function($str, $i) use (&$k) {
 				$k++;
-				return $str
-					.="<button data-hour=\""
-					.(intval($i)+intval($k>4 ? 12 : 0))
-					."\">$i</button>";}),
+				$data_hour = (intval($i)+intval($k>4 ? 12 : 0));
+				$display_hour = $k <= 4 ? $i : "{$i}P";
+				return $str .= "<button data-hour=\"$data_hour\">$display_hour</button>";}),
 			"</nav>"
 		));
 
