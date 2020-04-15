@@ -151,11 +151,16 @@ body {
 #weathermaps-nav button, #graphicalforecast-day button, #graphicalforecast-hour button {
 	border:1px solid black;
 	margin: 0.25rem;
-	padding: 0.25rem 0.5rem;
+	padding: 0.25rem 0.3rem;
+}
+
+#graphicalforecast-hour, #graphicalforecast-day, #weathermaps-nav {
+	display: flex;
+    justify-content: space-evenly;
 }
 
 #afd p {
-	font-family: sans-serif;
+	font-family: serif;
 	font-size: 1.3em;
 	line-height: 1.25em;
 	word-wrap: break-word;
@@ -187,3 +192,9 @@ details {
 .links li {
 	margin-bottom: 1em;
 }
+
+#graphicalforecast-img {
+	max-width: 100%;
+}
+
+/* dummy */

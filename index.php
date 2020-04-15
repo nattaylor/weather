@@ -30,6 +30,8 @@
 		echo sprintf("<!-- %s -->", $response);
 		curl_close($curl);
 	}
+
+	//header("Location: $url")
 	
 	$weather = new Weather(array(
 		"location"=>"42.3755,-71.0368",
@@ -50,7 +52,7 @@
 	<meta name="mobile-web-app-capable" content="yes">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<link rel="icon" sizes="128x128" href="icon.png">
-	<link rel="stylesheet" href="style.css<?php echo (isset($_GET['purge']) ? "?".time() : ""); ?>">
+	<link rel="stylesheet" href="style.css">
 </head>
 <body>
 	<details id="weather" open>
@@ -78,7 +80,7 @@
 	</details>
 
 	<details id="graphical">
-		<summary class="section-summary">Graphical Wind Forecast</summary>
+		<summary class="section-summary">Graphical Forecast</summary>
 		<?php echo $weather->generateGraphicalForecastHtml(); ?>
 		<p><a href="https://graphical.weather.gov/sectors/massachusetts.php#tabs">Open graphical forecast on weather.gov</a></p>
 	</details>
@@ -152,6 +154,11 @@ HTML;
 			});
 		document.querySelectorAll("#graphicalforecast-img, #weathermaps-img").forEach(function(e) {
 			e.addEventListener("load", function() {
+				if (document.querySelector(".toast") !== null) {
+					document.body.removeChild(document.querySelector(".toast"));
+				}
+			})
+			e.addEventListener("error", function() {
 				if (document.querySelector(".toast") !== null) {
 					document.body.removeChild(document.querySelector(".toast"));
 				}
